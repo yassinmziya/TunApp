@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Xcode
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
@@ -60,3 +61,77 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+=======
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Spotlight
+Spotlight-V100
+.Trashes
+
+# macOS specific files
+*.swp
+*.lock
+*.bak
+*.tmp
+*.orig
+*.log
+
+# Xcode
+DerivedData/
+*.xcuserstate
+*.xcworkspace
+*.xcuserdata/
+*.xcodeproj/project.xcworkspace/
+!*.pbxproj
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Cocoapods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+*.lock
+
+# Archives
+*.xcarchive
+
+# Provisioning profiles
+*.mobileprovision
+
+# Symbolication
+*.dSYM.zip
+*.dSYM
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# SwiftPM Binary Artifacts
+.xcframework
+
+# General build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Dependency manager lock files
+Cartfile.resolved
+Package.resolved
+>>>>>>> 59b766d (initial commit)
