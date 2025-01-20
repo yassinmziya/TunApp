@@ -10,41 +10,8 @@ import AudioKitEX
 import Foundation
 import SoundpipeAudioKit
 
-struct TunerData {
-    var pitch: Float = 0.0
-    var amplitude: Float = 0.0
-    var noteIndex: Int = 0
-    var ocatave: Int = 0
-    var distance: Float = 0.0
-    
-    var noteNameWithSharps: String {
-        TuningService.shared.getNoteNameWithSharps(noteIndex)
-    }
-    
-    var noteNameWithFlats: String {
-        TuningService.shared.getNoteNameWithFlats(noteIndex)
-    }
-    
-    var prevNoteNameWithSharps: String {
-        TuningService.shared.getNoteNameWithSharps(noteIndex - 1)
-    }
-    
-    var prevNoteNameWithFlats: String {
-        TuningService.shared.getNoteNameWithFlats(noteIndex - 1)
-    }
-    
-    var nextNoteNameWithSharps: String {
-        TuningService.shared.getNoteNameWithSharps(noteIndex + 1)
-    }
-    
-    var nextNoteNameWithFlats: String {
-        TuningService.shared.getNoteNameWithFlats(noteIndex + 1)
-    }
-    
-}
-
-class TuningService: ObservableObject, HasAudioEngine {
-    @Published var data = TunerData()
+class TuningManager: ObservableObject, HasAudioEngine {
+    @Published var data = TuningData()
 
     let engine = AudioEngine()
     private let initialDevice: Device
@@ -60,10 +27,8 @@ class TuningService: ObservableObject, HasAudioEngine {
     private let noteFrequencies = [16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87]
     private let noteNamesWithSharps = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
     private let noteNamesWithFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
-    
-    static let shared = TuningService()
 
-    private init() {
+    init() {
         guard let input = engine.input else { fatalError() }
 
         guard let device = engine.inputDevice else { fatalError() }
@@ -114,16 +79,8 @@ class TuningService: ObservableObject, HasAudioEngine {
             }
         }
         let octave = Int(log2f(pitch / frequency))
-        data.noteIndex = index
+        data.noteId = index
         data.ocatave = octave
         data.distance = minDistance
-    }
-    
-    func getNoteNameWithSharps(_ index: Int) -> String {
-        return noteNamesWithSharps[abs(index % noteNamesWithSharps.count)]
-    }
-    
-    func getNoteNameWithFlats(_ index: Int) -> String {
-        return noteNamesWithFlats[abs(index % noteNamesWithFlats.count)]
     }
 }
