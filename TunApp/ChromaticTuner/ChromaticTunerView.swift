@@ -18,8 +18,16 @@ struct ChromaticTunerView: View {
     }
     
     var body: some View {
-        Text(viewModel.viewData.frequency)
-            .font(.system(size: 48))
+        VStack {
+            HStack {
+                Text(viewModel.viewData.prevNoteName)
+                Text(viewModel.viewData.noteName)
+                    .font(.system(size: 48))
+                Text(viewModel.viewData.nextNoteName)
+                
+            }
+            Text(viewModel.viewData.frequency)
+        }
     }
 }
 
