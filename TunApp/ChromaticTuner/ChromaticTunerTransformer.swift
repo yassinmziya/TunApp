@@ -12,7 +12,8 @@ class ChromaticTunerTransformer {
             noteName: TuningUtils.getNoteName(for: tuningData.noteIndex),
             frequency: "\(Int(tuningData.pitch)) Hz",
             prevNoteName: TuningUtils.getNoteName(for: tuningData.noteIndex - 1),
-            nextNoteName: TuningUtils.getNoteName(for: tuningData.noteIndex + 1)
+            nextNoteName: TuningUtils.getNoteName(for: tuningData.noteIndex + 1),
+            distance: tuningData.distance
         )
     }
 }

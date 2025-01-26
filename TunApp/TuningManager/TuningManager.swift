@@ -16,12 +16,24 @@ class TuningManager: ObservableObject, HasAudioEngine {
     
     let engine = AudioEngine()
     
-    private let initialDevice: Device
-    private let mic: AudioEngine.InputNode
-    private let tappableNodeA: Fader
-    private let tappableNodeB: Fader
-    private let tappableNodeC: Fader
-    private let silence: Fader
+    private lazy var initialDevice = {
+        guard let device = engine.inputDevice else {
+            fatalError()
+        }
+        return device
+    }()
+    
+    private lazy var mic = {
+        guard let input = engine.input else {
+            fatalError()
+        }
+        return input
+    }()
+    
+    private lazy var tappableNodeA = Fader(mic)
+    private lazy var tappableNodeB = Fader(tappableNodeA)
+    private lazy var tappableNodeC = Fader(tappableNodeB)
+    private lazy var silence =  Fader(tappableNodeC, gain: 0)
     
     private lazy var tracker = PitchTap(mic) { pitch, amp in
         DispatchQueue.main.async {
@@ -30,17 +42,6 @@ class TuningManager: ObservableObject, HasAudioEngine {
     }
     
     init() {
-        guard let input = engine.input else { fatalError() }
-        
-        guard let device = engine.inputDevice else { fatalError() }
-        
-        initialDevice = device
-        
-        mic = input
-        tappableNodeA = Fader(mic)
-        tappableNodeB = Fader(tappableNodeA)
-        tappableNodeC = Fader(tappableNodeB)
-        silence = Fader(tappableNodeC, gain: 0)
         engine.output = silence
         tracker.start()
     }
@@ -68,5 +69,6 @@ class TuningManager: ObservableObject, HasAudioEngine {
         let octave = Int(log2f(pitch / frequency))
         data.noteIndex = index
         data.ocatave = octave
+        data.distance = frequency - Float(TuningUtils.noteFrequencies[index])
     }
 }
