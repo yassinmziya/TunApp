@@ -15,13 +15,16 @@ struct Meter: View {
     var body: some View {
         VStack {
             ZStack() {
+                MeterDial()
+                    .stroke(.cyan, style: StrokeStyle(lineWidth: 2.0, lineCap: .round))
+                    .frame(height: 200)
                 Color(.systemCyan)
                     .frame(width: 4, height: 150)
+                    .rotationEffect(
+                        .degrees(max(min(MAX_ANGLE, angle), -MAX_ANGLE)),
+                        anchor: .bottom
+                    )
             }
-            .rotationEffect(
-                .degrees(max(min(MAX_ANGLE, angle), -MAX_ANGLE)),
-                anchor: .bottom
-            )
         }
     }
 }
