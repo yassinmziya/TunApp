@@ -9,6 +9,7 @@ import SwiftUI
 
 struct Meter: View {
     
+    private let MAX_ANGLE = 72.0
     let angle: Double
     
     var body: some View {
@@ -17,11 +18,14 @@ struct Meter: View {
                 Color(.systemCyan)
                     .frame(width: 4, height: 150)
             }
-            .rotationEffect(.degrees(max(min(90, angle), -90)), anchor: .bottom)
+            .rotationEffect(
+                .degrees(max(min(MAX_ANGLE, angle), -MAX_ANGLE)),
+                anchor: .bottom
+            )
         }
     }
 }
 
 #Preview {
-    Meter(angle: -12)
+    Meter(angle: -90)
 }

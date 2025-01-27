@@ -32,7 +32,7 @@ struct ChromaticTunerView: View {
         }
         .onChange(of: viewModel.viewData.distance) { _, newValue in
             withAnimation {
-                meterAngle = Double(viewModel.viewData.distance * 90.0)
+                meterAngle = Double(viewModel.viewData.distance * 72.0)
             }
         }
     }
