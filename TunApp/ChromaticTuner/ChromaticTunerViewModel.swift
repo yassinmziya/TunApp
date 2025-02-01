@@ -10,9 +10,7 @@ import SwiftUI
 
 class ChromaticTunerViewModel: ObservableObject {
     
-    @Published var viewData = ChromaticTunerViewData(
-        frequency: "-"
-    )
+    @Published var viewData = ChromaticTunerViewData()
     
     private let tuningManager: TuningManager
     private var cancellables = Set<AnyCancellable>()

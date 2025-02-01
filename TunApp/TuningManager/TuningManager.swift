@@ -11,76 +11,64 @@ import Foundation
 import SoundpipeAudioKit
 
 class TuningManager: ObservableObject, HasAudioEngine {
+    
     @Published var data = TuningData()
-
+    
     let engine = AudioEngine()
-    private let initialDevice: Device
-
-    private let mic: AudioEngine.InputNode
-    private let tappableNodeA: Fader
-    private let tappableNodeB: Fader
-    private let tappableNodeC: Fader
-    private let silence: Fader
-
-    private var tracker: PitchTap!
-
-    private let noteFrequencies = [16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87]
-    private let noteNamesWithSharps = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
-    private let noteNamesWithFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
-
-    init() {
-        guard let input = engine.input else { fatalError() }
-
-        guard let device = engine.inputDevice else { fatalError() }
-
-        initialDevice = device
-
-        mic = input
-        tappableNodeA = Fader(mic)
-        tappableNodeB = Fader(tappableNodeA)
-        tappableNodeC = Fader(tappableNodeB)
-        silence = Fader(tappableNodeC, gain: 0)
-        engine.output = silence
-
-        tracker = PitchTap(mic) { pitch, amp in
-            DispatchQueue.main.async {
-                self.update(pitch[0], amp[0])
-            }
+    
+    private lazy var initialDevice = {
+        guard let device = engine.inputDevice else {
+            fatalError()
         }
+        return device
+    }()
+    
+    private lazy var mic = {
+        guard let input = engine.input else {
+            fatalError()
+        }
+        return input
+    }()
+    
+    private lazy var tappableNodeA = Fader(mic)
+    private lazy var tappableNodeB = Fader(tappableNodeA)
+    private lazy var tappableNodeC = Fader(tappableNodeB)
+    private lazy var silence =  Fader(tappableNodeC, gain: 0)
+    
+    private lazy var tracker = PitchTap(mic) { pitch, amp in
+        DispatchQueue.main.async {
+            self.update(pitch[0], amp[0])
+        }
+    }
+    
+    init() {
+        engine.output = silence
         tracker.start()
     }
-
+    
     func update(_ pitch: AUValue, _ amp: AUValue) {
         // Reduce sensitivity to background noise to prevent random / fluctuating data.
         guard amp > 0.1 else { return }
-
+        
         data.pitch = pitch
         data.amplitude = amp
-
+        
         // Map pitch to hardcoded octave represented by noteFrequencies array
-        var frequency = pitch
-        while frequency > Float(noteFrequencies[noteFrequencies.count - 1]) {
-            frequency /= 2.0
-        }
-        while frequency < Float(noteFrequencies[0]) {
-            frequency *= 2.0
-        }
-
+        let frequency = TuningUtils.getOcataveFrequency(for: pitch)
+        
         // Determine closest possible note mapping
-        var minAbsDistance: Float = 10000.0
         var minDistance: Float = 10000.0
         var index = 0
-        for possibleIndex in 0 ..< noteFrequencies.count {
-            let distance = fabsf(Float(noteFrequencies[possibleIndex]) - frequency)
-            if distance < minAbsDistance {
+        for possibleIndex in 0 ..< TuningUtils.noteFrequencies.count {
+            let distance = fabsf(Float(TuningUtils.noteFrequencies[possibleIndex]) - frequency)
+            if distance < minDistance {
                 index = possibleIndex
-                minAbsDistance = distance
-                minDistance = Float(noteFrequencies[possibleIndex]) - frequency
+                minDistance = distance
             }
         }
         let octave = Int(log2f(pitch / frequency))
-        data.noteId = index
+        data.noteIndex = index
         data.ocatave = octave
-        data.distance = minDistance
+        data.distance = frequency - Float(TuningUtils.noteFrequencies[index])
     }
 }

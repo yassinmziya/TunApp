@@ -6,5 +6,9 @@
 //
 
 struct ChromaticTunerViewData {
-    let frequency: String
+    private(set) var noteName = ""
+    private(set) var frequency = ""
+    private(set) var prevNoteName = ""
+    private(set) var nextNoteName = ""
+    private(set) var distance: Float = 0
 }
