@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Xcode
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
@@ -134,4 +133,10 @@ playground.xcworkspace
 # Dependency manager lock files
 Cartfile.resolved
 Package.resolved
->>>>>>> 59b766d (initial commit)
+
+### Xcode Patch ###
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
