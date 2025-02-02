@@ -19,21 +19,40 @@ struct ChromaticTunerView: View {
     }
     
     var body: some View {
-        VStack {
-            Meter(angle: meterAngle)
-            HStack {
-                Text(viewModel.viewData.prevNoteName)
-                Text(viewModel.viewData.noteName)
-                    .font(.system(size: 48))
-                Text(viewModel.viewData.nextNoteName)
+        ZStack {
+            VStack {
+                Text("TunApp")
+                    .padding(EdgeInsets(top: 24, leading: 0, bottom: 0, trailing: 0))
+                    .font(.system(size: 24, weight: .bold))
+                Spacer()
+            }
+            VStack {
+                Spacer()
+                HStack(spacing: 24) {
+                    Text("A♭")
+                        .font(.system(size: 96))
+                        .foregroundColor(.gray)
+                    Spacer()
+                    Text("A")
+                        .font(.system(size: 96))
+                    Spacer()
+                    Text("B♭")
+                        .font(.system(size: 96))
+                        .foregroundColor(.gray)
+                }
+                .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                 
+                // TODO: Placeholder for linear meter
+                LinearMeter()
+                    .frame(maxWidth: .infinity, maxHeight: 184)
+                
+                Text("440 Hz")
+                    .padding(EdgeInsets(top: 40, leading: 0, bottom: 0, trailing: 0))
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+                Spacer()
             }
-            Text(viewModel.viewData.frequency)
-        }
-        .onChange(of: viewModel.viewData.distance) { _, newValue in
-            withAnimation {
-                meterAngle = Double(viewModel.viewData.distance * 72.0)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
