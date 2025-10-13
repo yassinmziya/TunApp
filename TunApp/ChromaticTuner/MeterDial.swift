@@ -1,5 +1,5 @@
 //
-//  MeterDial.swift
+//  GaugeDial.swift
 //  TunApp
 //
 //  Created by Yassin Mziya on 1/26/25.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct MeterDial: Shape {
+struct GaugeDial: Shape {
     
     private(set) var numOfTicks = 9
     private(set) var sweepAngle =  Angle(degrees: 135)
@@ -57,7 +57,7 @@ struct MeterDial: Shape {
 }
 
 #Preview {
-    MeterDial(numOfTicks: 6)
+    GaugeDial(numOfTicks: 6)
         .stroke(.cyan, style: StrokeStyle(lineWidth: 2.0, lineCap: .round))
         .frame(width: 300, height: 200)
 }

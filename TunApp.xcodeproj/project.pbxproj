@@ -265,7 +265,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TunApp/Preview Content\"";
-				DEVELOPMENT_TEAM = XJL68ZTB2X;
+				DEVELOPMENT_TEAM = FHXSPA8M8R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to capture audio.";
@@ -295,7 +295,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"TunApp/Preview Content\"";
-				DEVELOPMENT_TEAM = XJL68ZTB2X;
+				DEVELOPMENT_TEAM = FHXSPA8M8R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to capture audio.";
