@@ -31,8 +31,8 @@ struct MeterDial: Shape {
             
             // Calculate start piont on circumfrence
             let startPoint = CGPoint(
-                x: radius * cos(angle.radians) + center.x,
-                y: radius * sin(angle.radians) + center.y
+                x: radius, // * cos(angle.radians) + center.x,
+                y: radius // * sin(angle.radians) + center.y
             )
             
             // Calculate direction vector

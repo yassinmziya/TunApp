@@ -15,17 +15,7 @@ struct TunAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ChromaticTunerView(tuningManager: tuniningManager)
-                .onChange(of: scenePhase) { phase in
-                    switch phase {
-                    case .active:
-                        tuniningManager.start()
-                    case .background, .inactive:
-                        tuniningManager.stop()
-                    default:
-                        tuniningManager.stop()
-                    }
-                }
+            Tuner()
         }
     }
     
