@@ -17,6 +17,16 @@ struct TunAppApp: App {
         WindowGroup {
             Tuner()
                 .environmentObject(tuniningManager)
+                .onChange(of: scenePhase) { phase in
+                    switch phase {
+                    case .active:
+                        tuniningManager.start()
+                    case .background, .inactive:
+                        tuniningManager.stop()
+                    default:
+                        tuniningManager.stop()
+                    }
+                }
         }
     }
     

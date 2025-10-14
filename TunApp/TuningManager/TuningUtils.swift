@@ -14,8 +14,8 @@ class TuningUtils {
     private static let noteNamesWithSharps = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
     private static let noteNamesWithFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
     
-    /*
-     Maps given pitch value to hardcoded octave represented by noteFrequencies array
+    /**
+     Maps the given pitch value to hardcoded octave represented by `noteFrequencies` array
      */
     static func getOcataveFrequency(for pitch: Float) -> Float {
         var frequency = pitch
@@ -37,3 +37,4 @@ class TuningUtils {
         return noteNames[abs(index % noteNames.count)]
     }
 }
+

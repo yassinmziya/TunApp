@@ -13,7 +13,7 @@ struct TuningData {
     var ocatave: Int = 0
     var distance: Float = 0.0
     
-    func noteName(_ useSharps: Bool = false) -> String {
+    func noteName(useSharps: Bool = false) -> String {
         return TuningUtils.getNoteName(for: noteIndex, useSharps: useSharps)
     }
 }

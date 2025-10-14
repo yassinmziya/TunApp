@@ -70,5 +70,6 @@ class TuningManager: ObservableObject, HasAudioEngine {
         data.noteIndex = index
         data.ocatave = octave
         data.distance = frequency - Float(TuningUtils.noteFrequencies[index])
+        print(data.distance)
     }
 }
