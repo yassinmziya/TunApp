@@ -1,5 +1,5 @@
 //
-//  Meter.swift
+//  Gauge.swift
 //  TunApp
 //
 //  Created by Yassin Mziya on 1/25/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Meter: View {
+struct Gauge: View {
     
     private let MAX_ANGLE = 72.0
     let angle: Double
@@ -15,7 +15,7 @@ struct Meter: View {
     var body: some View {
         VStack {
             ZStack() {
-                MeterDial()
+                GaugeDial()
                     .stroke(.cyan, style: StrokeStyle(lineWidth: 2.0, lineCap: .round))
                     .frame(height: 200)
                 Color(.systemCyan)
@@ -30,5 +30,5 @@ struct Meter: View {
 }
 
 #Preview {
-    Meter(angle: -90)
+    Gauge(angle: -90)
 }

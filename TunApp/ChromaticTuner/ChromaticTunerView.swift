@@ -10,7 +10,7 @@ import SwiftUI
 struct ChromaticTunerView: View {
     
     @StateObject var viewModel: ChromaticTunerViewModel
-    @State private var meterAngle: Double = 0
+    @State private var gaugeAngle: Double = 0
     
     init(tuningManager: TuningManager) {
         _viewModel = StateObject(
@@ -20,7 +20,7 @@ struct ChromaticTunerView: View {
     
     var body: some View {
         VStack {
-            Meter(angle: meterAngle)
+            Gauge(angle: gaugeAngle)
             HStack {
                 Text(viewModel.viewData.prevNoteName)
                 Text(viewModel.viewData.noteName)
@@ -32,7 +32,7 @@ struct ChromaticTunerView: View {
         }
         .onChange(of: viewModel.viewData.distance) { _, newValue in
             withAnimation {
-                meterAngle = Double(viewModel.viewData.distance * 72.0)
+                gaugeAngle = Double(viewModel.viewData.distance * 72.0)
             }
         }
     }
