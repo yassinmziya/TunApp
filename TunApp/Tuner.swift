@@ -62,6 +62,7 @@ private struct MainContent: View {
         }
         .presentationDetents([.medium])
         .presentationBackgroundInteraction(.enabled)
+        .interactiveDismissDisabled()
     }
 }
 
