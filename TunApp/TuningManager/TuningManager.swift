@@ -46,9 +46,23 @@ class TuningManager: ObservableObject, HasAudioEngine {
         tracker.start()
     }
     
+    // We apply Exponential Moving Average (EMA) to smooth collected signal
+    // Add smoothing constants and state
+    private let pitchSmoothingFactor: Float = 0.3  // 0.0 = no change, 1.0 = instant
+    private let distanceSmoothingFactor: Float = 0.4
+    private var smoothedPitch: Float = 0.0
+    private var smoothedDistance: Float = 0.0
+    
     func update(_ pitch: AUValue, _ amp: AUValue) {
         // Reduce sensitivity to background noise to prevent random / fluctuating data.
         guard amp > 0.1 else { return }
+        
+        // Apply exponential moving average to pitch
+        if smoothedPitch == 0.0 {
+            smoothedPitch = pitch
+        } else {
+            smoothedPitch = smoothedPitch * (1.0 - pitchSmoothingFactor) + pitch * pitchSmoothingFactor
+        }
         
         data.pitch = pitch
         data.amplitude = amp
@@ -66,10 +80,16 @@ class TuningManager: ObservableObject, HasAudioEngine {
                 minDistance = distance
             }
         }
-        let octave = Int(log2f(pitch / frequency))
+        let octave = Int(log2f(smoothedPitch / frequency))
+                
+        let rawDistance = frequency - Float(TuningUtils.noteFrequencies[index])
+                
+        // Smooth the distance separately for needle movement
+        smoothedDistance = smoothedDistance * (1.0 - distanceSmoothingFactor) + rawDistance * distanceSmoothingFactor
+                
         data.noteIndex = index
         data.ocatave = octave
-        data.distance = frequency - Float(TuningUtils.noteFrequencies[index])
+        data.distance = smoothedDistance
         print(data.distance)
     }
 }
