@@ -49,7 +49,7 @@ class TuningManager: ObservableObject, HasAudioEngine {
     // We apply Exponential Moving Average (EMA) to smooth collected signal
     // Add smoothing constants and state
     private let pitchSmoothingFactor: Float = 0.3  // 0.0 = no change, 1.0 = instant
-    private let distanceSmoothingFactor: Float = 0.4
+    private let distanceSmoothingFactor: Float = 0.3
     private var smoothedPitch: Float = 0.0
     private var smoothedDistance: Float = 0.0
     
@@ -57,39 +57,41 @@ class TuningManager: ObservableObject, HasAudioEngine {
         // Reduce sensitivity to background noise to prevent random / fluctuating data.
         guard amp > 0.1 else { return }
         
-        // Apply exponential moving average to pitch
+        // 1. Apply exponential moving average to pitch
         if smoothedPitch == 0.0 {
             smoothedPitch = pitch
         } else {
             smoothedPitch = smoothedPitch * (1.0 - pitchSmoothingFactor) + pitch * pitchSmoothingFactor
         }
         
-        data.pitch = pitch
+        data.pitch = smoothedPitch
         data.amplitude = amp
         
-        // Map pitch to hardcoded octave represented by noteFrequencies array
-        let frequency = TuningUtils.getOcataveFrequency(for: pitch)
+        // 2. Map pitch to hardcoded octave represented by noteFrequencies array
+        let mappedFrequency = TuningUtils.getOcataveFrequency(for: smoothedPitch)
         
-        // Determine closest possible note mapping
+        // 3. Determine closest possible note mapping
         var minDistance: Float = 10000.0
         var index = 0
         for possibleIndex in 0 ..< TuningUtils.noteFrequencies.count {
-            let distance = fabsf(Float(TuningUtils.noteFrequencies[possibleIndex]) - frequency)
+            let distance = fabsf(Float(TuningUtils.noteFrequencies[possibleIndex]) - mappedFrequency)
             if distance < minDistance {
                 index = possibleIndex
                 minDistance = distance
             }
         }
-        let octave = Int(log2f(smoothedPitch / frequency))
+        
+        // 4. Compute the octave
+        let octave = Int(log2f(smoothedPitch / mappedFrequency))
                 
-        let rawDistance = frequency - Float(TuningUtils.noteFrequencies[index])
+        let targetFrequency = Float(TuningUtils.noteFrequencies[index]) * powf(2.0, Float(octave))
+        let centsOff = 1200.0 * log2f(smoothedPitch / targetFrequency)
                 
-        // Smooth the distance separately for needle movement
-        smoothedDistance = smoothedDistance * (1.0 - distanceSmoothingFactor) + rawDistance * distanceSmoothingFactor
+        // 5. Smooth the distance separately for needle movement
+        smoothedDistance = smoothedDistance * (1.0 - distanceSmoothingFactor) + centsOff * distanceSmoothingFactor
                 
         data.noteIndex = index
         data.ocatave = octave
         data.distance = smoothedDistance
-        print(data.distance)
     }
 }

@@ -102,7 +102,8 @@ private struct TickerLayer: View {
             Canvas { context, size in
                 for value in valueBuffer.values {
                     var path = Path()
-                    let x = size.width / 2.0 + value.1
+                    let xOffset = size.width / 2.0
+                    let x = xOffset + CGFloat.boundedValue(value.1, availableWidth: size.width)
                     let elapsed = timeline.date.timeIntervalSince(value.0)
                     let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
                     let y = yOffset + speed * elapsed
@@ -117,8 +118,7 @@ private struct TickerLayer: View {
             }
         }
         .onReceive(tuningManager.$data) { tuningData in
-
-            valueBuffer.add(tuningData.boundedValue)
+            valueBuffer.add(CGFloat(tuningData.distance))
         }
     }
 }
@@ -143,8 +143,10 @@ private struct NeedleLayer: View {
                 
                 // Needle
                 let strokeColor = tuningManager.data.distance < 0.02 ? Color.green : .red
+                let xValue = CGFloat.boundedValue(
+                    CGFloat(tuningManager.data.distance), availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
-                    Text("\(tuningManager.data.distance * 1000)")
+                    Text("\(Int(tuningManager.data.distance))")
                         .font(.system(size: 12))
                         .frame(width: NEEDLE_DIAMETER, height: NEEDLE_DIAMETER)
                         .overlay {
@@ -152,15 +154,16 @@ private struct NeedleLayer: View {
                                 .stroke(strokeColor, lineWidth: 4)
                         }
                         .background(.background)
-                        .offset(x: tuningManager.data.boundedValue)
-                        .animation(.spring, value: tuningManager.data.boundedValue)
+                        .offset(x: xValue)
+                        .animation(.spring, value: xValue)
+                        .contentTransition(.identity)
                     
                     Triangle()
                         .fill(strokeColor)
                         .stroke(strokeColor, style: StrokeStyle(lineWidth: 0.1, lineJoin: .round))
                         .frame(width: 8, height: NEEDLE_POINTER_HEIGHT)
-                        .offset(x: tuningManager.data.boundedValue)
-                        .animation(.spring, value: tuningManager.data.boundedValue)
+                        .offset(x: xValue)
+                        .animation(.spring, value: xValue)
                     Spacer()
                 }
                 .padding(.top, NEEDLE_TOP_OFFSET)
@@ -193,11 +196,10 @@ fileprivate class ValueBuffer: ObservableObject {
     }
 }
 
-fileprivate extension TuningData {
+fileprivate extension CGFloat {
     
-    var boundedValue: CGFloat {
-        let scaledValue = CGFloat(distance) * 100
-        return min(max(scaledValue, -150), 150)
+    static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
+        return (value * availableWidth / 200.0).rounded()
     }
 }
 
