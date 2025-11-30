@@ -36,10 +36,11 @@ class TuningManager: ObservableObject, HasAudioEngine {
     private lazy var silence =  Fader(tappableNodeC, gain: 0)
     
     private lazy var tracker = PitchTap(mic) { pitch, amp in
-        DispatchQueue.main.async {
-            self.update(pitch[0], amp[0])
-        }
+        self.update(pitch[0], amp[0])
     }
+    
+    private lazy var signalProcessor = SignalProcessor()
+    private lazy var noteDetector = NoteDetector()
     
     init() {
         engine.output = silence
@@ -47,29 +48,24 @@ class TuningManager: ObservableObject, HasAudioEngine {
     }
     
     func update(_ pitch: AUValue, _ amp: AUValue) {
-        // Reduce sensitivity to background noise to prevent random / fluctuating data.
-        guard amp > 0.1 else { return }
-        
-        data.pitch = pitch
-        data.amplitude = amp
-        
-        // Map pitch to hardcoded octave represented by noteFrequencies array
-        let frequency = TuningUtils.getOcataveFrequency(for: pitch)
-        
-        // Determine closest possible note mapping
-        var minDistance: Float = 10000.0
-        var index = 0
-        for possibleIndex in 0 ..< TuningUtils.noteFrequencies.count {
-            let distance = fabsf(Float(TuningUtils.noteFrequencies[possibleIndex]) - frequency)
-            if distance < minDistance {
-                index = possibleIndex
-                minDistance = distance
+        DispatchQueue.main.async { [weak self] in
+            guard let self else {
+                return
             }
+            guard let processedPitch = self.signalProcessor.process(pitch, amplitude: amp) else {
+                self.updateData(nil, amplitude: amp)
+                return
+            }
+            let noteDetection = noteDetector.detectNote(processedPitch)
+            self.updateData(noteDetection, amplitude: amp)
         }
-        let octave = Int(log2f(pitch / frequency))
-        data.noteIndex = index
-        data.ocatave = octave
-        data.distance = frequency - Float(TuningUtils.noteFrequencies[index])
-        print(data.distance)
+    }
+    
+    private func updateData(_ noteDetection: NoteDetector.NoteDetection?, amplitude: Float) {
+        data.pitch = noteDetection?.adjustedFrequency ?? 0.0
+        data.amplitude = amplitude
+        data.ocatave = noteDetection?.octave ?? 0
+        data.distance = noteDetection?.deviation ?? 0.0
+        data.note = noteDetection?.note
     }
 }

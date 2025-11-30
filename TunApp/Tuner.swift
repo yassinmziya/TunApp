@@ -41,15 +41,20 @@ private struct MainContent: View {
     var body: some View {
         VStack {
             Spacer()
-            Text(tuningManager.data.noteName(useSharps: useSharps))
+            let note = tuningManager.data.note
+            let noteName = useSharps ? note?.sharpName : note?.flatName
+            let octave = note != nil ? String(tuningManager.data.ocatave) : ""
+            Text(noteName ?? "-")
                 .font(.system(size: 96))
-            + Text("\(tuningManager.data.ocatave)")
+            + Text("\(octave)")
                 .font(.system(size: 48))
                 .baselineOffset(36)
             
             Text("Frequency: \(Int(tuningManager.data.pitch)) Hz")
                 .font(.system(size: 24))
             Text("Distance: \(tuningManager.data.distance)")
+                .font(.system(size: 16))
+            Text("Amplitude: \(tuningManager.data.amplitude)")
                 .font(.system(size: 16))
             Spacer()
             HStack {
@@ -62,6 +67,7 @@ private struct MainContent: View {
         }
         .presentationDetents([.medium])
         .presentationBackgroundInteraction(.enabled)
+        .interactiveDismissDisabled()
     }
 }
 

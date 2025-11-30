@@ -86,6 +86,10 @@ struct GridLinesLayer: View {
 
 // MARK: - TickerLayer
 
+private let NEEDLE_DIAMETER: CGFloat = 40
+private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
+private let NEEDLE_TOP_OFFSET: CGFloat = 32
+
 private struct TickerLayer: View {
     
     private let speed: CGFloat = 32
@@ -98,9 +102,11 @@ private struct TickerLayer: View {
             Canvas { context, size in
                 for value in valueBuffer.values {
                     var path = Path()
-                    let x = size.width / 2.0 + value.1
+                    let xOffset = size.width / 2.0
+                    let x = xOffset + CGFloat.boundedValue(value.1, availableWidth: size.width)
                     let elapsed = timeline.date.timeIntervalSince(value.0)
-                    let y = 64 + speed * elapsed
+                    let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
+                    let y = yOffset + speed * elapsed
                     path.addEllipse(
                         in: CGRect(
                             origin: CGPoint(x: x, y: y),
@@ -112,8 +118,8 @@ private struct TickerLayer: View {
             }
         }
         .onReceive(tuningManager.$data) { tuningData in
-
-            valueBuffer.add(tuningData.boundedValue)
+            guard let _  = tuningData.note else { return }
+            valueBuffer.add(CGFloat(tuningData.distance))
         }
     }
 }
@@ -128,26 +134,52 @@ private struct NeedleLayer: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // Center rule
                 Path { path in
                     let x = geometry.size.width / 2.0
                     path.move(to: .init(x: x, y: 0))
                     path.addLine(to: .init(x: x, y: geometry.size.height))
                 }
                 .stroke(Color.gray, lineWidth: 1.2)
-                Canvas { context, size in
-                    var path = Path()
-                    let height: CGFloat = 32.0
-                    let x = size.width / 2.0 + tuningManager.data.boundedValue - height/2.0
-                    path.addEllipse(
-                        in: CGRect(
-                            origin: CGPoint(x: x, y: height),
-                            size: CGSize(width: height, height: height)
-                        )
-                    )
-                    context.fill(path, with: .color(.black))
-                    context.stroke(path, with: .color(.green), lineWidth: 2)
+                
+                // Needle
+                let strokeColor = tuningManager.data.distance < 0.02 ? Color.green : .red
+                let xValue = CGFloat.boundedValue(
+                    CGFloat(tuningManager.data.distance), availableWidth: geometry.size.width)
+                VStack(alignment: .center, spacing: 0) {
+                    Text("\(Int(tuningManager.data.distance))")
+                        .font(.system(size: 12))
+                        .frame(width: NEEDLE_DIAMETER, height: NEEDLE_DIAMETER)
+                        .overlay {
+                            Circle()
+                                .stroke(strokeColor, lineWidth: 4)
+                        }
+                        .background(.background)
+                        .offset(x: xValue)
+                        .animation(.spring, value: xValue)
+                        .contentTransition(.identity)
+                    
+                    Triangle()
+                        .fill(strokeColor)
+                        .stroke(strokeColor, style: StrokeStyle(lineWidth: 0.1, lineJoin: .round))
+                        .frame(width: 8, height: NEEDLE_POINTER_HEIGHT)
+                        .offset(x: xValue)
+                        .animation(.spring, value: xValue)
+                    Spacer()
                 }
+                .padding(.top, NEEDLE_TOP_OFFSET)
             }
+        }
+    }
+    
+    struct Triangle: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            path.closeSubpath()
+            return path
         }
     }
 }
@@ -165,11 +197,10 @@ fileprivate class ValueBuffer: ObservableObject {
     }
 }
 
-fileprivate extension TuningData {
+fileprivate extension CGFloat {
     
-    var boundedValue: CGFloat {
-        let scaledValue = CGFloat(distance) * 250
-        return min(max(scaledValue, -150), 150)
+    static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
+        return (value * availableWidth / 200.0).rounded()
     }
 }
 
