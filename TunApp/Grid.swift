@@ -118,6 +118,7 @@ private struct TickerLayer: View {
             }
         }
         .onReceive(tuningManager.$data) { tuningData in
+            guard let _  = tuningData.note else { return }
             valueBuffer.add(CGFloat(tuningData.distance))
         }
     }
