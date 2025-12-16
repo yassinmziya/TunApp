@@ -36,13 +36,13 @@ struct Tuner: View {
 private struct MainContent: View {
     
     @EnvironmentObject var tuningManager: TuningManager
-    @State var useSharps = false
+    @State var usingFlats = true
     
     var body: some View {
         VStack {
             Spacer()
             let note = tuningManager.data.note
-            let noteName = useSharps ? note?.sharpName : note?.flatName
+            let noteName = note?.name(usingFlats: usingFlats)
             let octave = note != nil ? String(tuningManager.data.ocatave) : ""
             Text(noteName ?? "-")
                 .font(.system(size: 96))
@@ -59,8 +59,8 @@ private struct MainContent: View {
             Spacer()
             HStack {
                 Spacer()
-                Toggle(isOn: $useSharps) {
-                    Text("\(TuningUtils.flatSymbol)/\(TuningUtils.sharpSymbol)")
+                Toggle(isOn: $usingFlats) {
+                    Text("\(TuningUtils.sharpSymbol)/\(TuningUtils.flatSymbol)")
                 }
             }
             .padding()

@@ -46,7 +46,7 @@ fileprivate extension View {
 struct GridLinesLayer: View {
     
     private let strokeWidth: CGFloat = 1.0
-    private let strokeColor = Color.gray.opacity(0.1)
+    private let strokeColor = Color.gray.opacity(0.25)
     private let numberOfSquaresAccrossWidth = 18.0
     private let speed: CGFloat = 32
     
@@ -89,6 +89,7 @@ struct GridLinesLayer: View {
 private let NEEDLE_DIAMETER: CGFloat = 40
 private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
 private let NEEDLE_TOP_OFFSET: CGFloat = 32
+private let TICK_RADIUS: CGFloat = 3
 
 private struct TickerLayer: View {
     
@@ -110,7 +111,8 @@ private struct TickerLayer: View {
                     path.addEllipse(
                         in: CGRect(
                             origin: CGPoint(x: x, y: y),
-                            size: CGSize(width: 4, height: 4)
+                            size: CGSize(
+                                width: TICK_RADIUS, height: TICK_RADIUS)
                         )
                     )
                     context.fill(path, with: .color(.red))

@@ -9,21 +9,7 @@ import Foundation
 
 class NoteDetector {
     
-    private let referenceFrequencies: [Float] =
-    [16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87]
-    private let noteNamesWithSharps = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"]
-    private let noteNamesWithFlats = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"]
-    
     private let deadzoneThreshold: Float = 5.0  // cents
-    
-    /**
-     Represents a note within the reference window. See: `NoteDetector`
-     */
-    struct Note {
-        let referenceFrequency: Float
-        let sharpName: String
-        let flatName: String
-    }
     
     struct NoteDetection {
         let note: Note
@@ -32,28 +18,25 @@ class NoteDetector {
         let deviation: Float
     }
     
-    func detectNote(_ frequency: Float) -> NoteDetection {
+    func detectNote(_ frequency: Float) -> NoteDetection? {
         let adjustedFrequency = adjustToReferenceOctaveRange(frequency)
+        
         var minDistance: Float = .greatestFiniteMagnitude
-        var index = 0
-        for possibleIndex in 0 ..< referenceFrequencies.count {
-            let distance = fabsf(Float(referenceFrequencies[possibleIndex]) - adjustedFrequency)
+        var detectedNote: Note?
+        for possibleNote in Note.allCases {
+            let distance = fabsf(possibleNote.referenceFrequency - adjustedFrequency)
             if distance < minDistance {
-                index = possibleIndex
+                detectedNote = possibleNote
                 minDistance = distance
             }
         }
-        
-        let detectedNote = Note(
-            referenceFrequency: referenceFrequencies[index],
-            sharpName: noteNamesWithSharps[index],
-            flatName: noteNamesWithFlats[index]
-        )
+        guard let detectedNote else {
+            return nil
+        }
         
         let octave = Int(log2f(frequency / adjustedFrequency))
         
-        var deviation = 1200 * log2f(adjustedFrequency/detectedNote.referenceFrequency)
-
+        var deviation = 1200 * log2f(adjustedFrequency/detectedNote.referenceFrequency) // in cents
         if abs(deviation) < deadzoneThreshold {
             deviation = 0.0
         }
@@ -78,10 +61,10 @@ class NoteDetector {
      */
     private func adjustToReferenceOctaveRange(_ frequency: Float) -> Float {
         var frequency = frequency
-        while frequency > Float(referenceFrequencies.last!) {
+        while frequency > Float(Note.allCases.last!.referenceFrequency) {
             frequency /= 2.0
         }
-        while frequency < Float(referenceFrequencies.first!) {
+        while frequency < Float(Note.allCases.first!.referenceFrequency) {
             frequency *= 2.0
         }
         return frequency

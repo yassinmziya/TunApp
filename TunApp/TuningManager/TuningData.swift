@@ -15,5 +15,5 @@ struct TuningData {
     var ocatave: Int = 0
     var distance: Float = 0.0
     
-    var note: NoteDetector.Note?
+    var note: Note?
 }

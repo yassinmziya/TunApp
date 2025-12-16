@@ -52,11 +52,13 @@ class TuningManager: ObservableObject, HasAudioEngine {
             guard let self else {
                 return
             }
-            guard let processedPitch = self.signalProcessor.process(pitch, amplitude: amp) else {
+            guard
+                let processedPitch = self.signalProcessor.process(pitch, amplitude: amp),
+                let noteDetection = noteDetector.detectNote(processedPitch)
+            else {
                 self.updateData(nil, amplitude: amp)
                 return
             }
-            let noteDetection = noteDetector.detectNote(processedPitch)
             self.updateData(noteDetection, amplitude: amp)
         }
     }
