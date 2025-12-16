@@ -18,13 +18,13 @@ class NoteDetector {
         let deviation: Float
     }
     
-    func detectNote(_ frequency: Float) -> NoteDetection? {
-        let adjustedFrequency = adjustToReferenceOctaveRange(frequency)
+    func detectNote(measuredFrequency: Float) -> NoteDetection? {
+        let adjustedMeasuredFrequency = adjustToReferenceOctaveRange(measuredFrequency)
         
         var minDistance: Float = .greatestFiniteMagnitude
         var detectedNote: Note?
         for possibleNote in Note.allCases {
-            let distance = fabsf(possibleNote.referenceFrequency - adjustedFrequency)
+            let distance = fabsf(possibleNote.referenceFrequency - adjustedMeasuredFrequency)
             if distance < minDistance {
                 detectedNote = possibleNote
                 minDistance = distance
@@ -34,9 +34,9 @@ class NoteDetector {
             return nil
         }
         
-        let octave = Int(log2f(frequency / adjustedFrequency))
+        let octave = Int(log2f(measuredFrequency / adjustedMeasuredFrequency))
         
-        var deviation = 1200 * log2f(adjustedFrequency/detectedNote.referenceFrequency) // in cents
+        var deviation = 1200 * log2f(adjustedMeasuredFrequency/detectedNote.referenceFrequency) // in cents
         if abs(deviation) < deadzoneThreshold {
             deviation = 0.0
         }
@@ -44,9 +44,25 @@ class NoteDetector {
         return NoteDetection(
             note: detectedNote,
             octave: octave,
-            adjustedFrequency: adjustedFrequency,
+            adjustedFrequency: adjustedMeasuredFrequency,
             deviation: deviation
         )
+    }
+    
+    func detectNote(
+        measuredFrequency: Float,
+        tuningNote: TuningNote
+    ) -> NoteDetection {
+        let targetFrequency = tuningNote.note.frequency(for: tuningNote.octave)
+        var deviation = 1200 * log2f(measuredFrequency/targetFrequency) // in cents
+        if abs(deviation) < deadzoneThreshold {
+            deviation = 0.0
+        }
+        return NoteDetection(
+            note: tuningNote.note,
+            octave: tuningNote.octave,
+            adjustedFrequency: measuredFrequency,
+            deviation: deviation)
     }
     
     /**

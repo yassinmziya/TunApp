@@ -14,6 +14,8 @@ class TuningManager: ObservableObject, HasAudioEngine {
     
     @Published var data = TuningData()
     
+    var tuningNote: TuningNote? = TuningPreset.standard.notes.first
+    
     let engine = AudioEngine()
     
     private lazy var initialDevice = {
@@ -52,12 +54,15 @@ class TuningManager: ObservableObject, HasAudioEngine {
             guard let self else {
                 return
             }
-            guard
-                let processedPitch = self.signalProcessor.process(pitch, amplitude: amp),
-                let noteDetection = noteDetector.detectNote(processedPitch)
-            else {
+            guard let processedPitch = self.signalProcessor.process(pitch, amplitude: amp) else {
                 self.updateData(nil, amplitude: amp)
                 return
+            }
+            var noteDetection: NoteDetector.NoteDetection?
+            if let tuningNote {
+                noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
+            } else {
+                noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch)
             }
             self.updateData(noteDetection, amplitude: amp)
         }

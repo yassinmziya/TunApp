@@ -5,6 +5,8 @@
 //  Created by Yassin Mziya on 12/15/25.
 //
 
+import Foundation
+
 /**
  Represents a note within the reference window
  */
@@ -54,6 +56,56 @@ enum Note: CaseIterable {
         case .a: return 27.5000
         case .aSharp: return 29.1352
         case .b: return 30.8677
+        }
+    }
+    
+    func frequency(for ocatave: Int) -> Float {
+        return referenceFrequency * pow(2.0, Float(ocatave))
+    }
+}
+
+struct TuningNote {
+    
+    let note: Note
+    let octave: Int
+}
+
+
+enum TuningPreset {
+    
+    case standard
+    case dropD
+    case openG
+    
+    var notes: [TuningNote] {
+        switch self {
+        case .standard:
+            return [
+                TuningNote(note: .e, octave: 2),
+                TuningNote(note: .a, octave: 2),
+                TuningNote(note: .d, octave: 3),
+                TuningNote(note: .g, octave: 3),
+                TuningNote(note: .b, octave: 3),
+                TuningNote(note: .e, octave: 3)
+            ]
+        case .dropD:
+            return [
+                TuningNote(note: .d, octave: 2),
+                TuningNote(note: .a, octave: 2),
+                TuningNote(note: .d, octave: 3),
+                TuningNote(note: .g, octave: 3),
+                TuningNote(note: .b, octave: 3),
+                TuningNote(note: .e, octave: 4)
+            ]
+        case .openG:
+            return [
+                TuningNote(note: .d, octave: 2),
+                TuningNote(note: .g, octave: 2),
+                TuningNote(note: .d, octave: 3),
+                TuningNote(note: .g, octave: 3),
+                TuningNote(note: .b, octave: 3),
+                TuningNote(note: .d, octave: 4)
+            ]
         }
     }
 }
