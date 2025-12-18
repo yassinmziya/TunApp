@@ -11,7 +11,7 @@ import SwiftUI
 
 struct Grid: View {
     
-    @EnvironmentObject var tuningManager: TuningManager
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         ZStack {
@@ -95,8 +95,8 @@ private struct TickerLayer: View {
     
     private let speed: CGFloat = 32
     
-    @StateObject var valueBuffer = ValueBuffer()
-    @EnvironmentObject var tuningManager: TuningManager
+    @State var valueBuffer = ValueBuffer()
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -119,7 +119,7 @@ private struct TickerLayer: View {
                 }
             }
         }
-        .onReceive(tuningManager.$data) { tuningData in
+        .onChange(of: tuningManager.tuningData) { _, tuningData in
             guard let _  = tuningData.note else { return }
             valueBuffer.add(CGFloat(tuningData.distance))
         }
@@ -131,7 +131,7 @@ private struct TickerLayer: View {
 
 private struct NeedleLayer: View {
     
-    @EnvironmentObject var tuningManager: TuningManager
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         GeometryReader { geometry in
@@ -145,11 +145,11 @@ private struct NeedleLayer: View {
                 .stroke(Color.gray, lineWidth: 1.2)
                 
                 // Needle
-                let strokeColor = tuningManager.data.distance < 0.02 ? Color.green : .red
+                let strokeColor = tuningManager.tuningData.distance < 0.02 ? Color.green : .red
                 let xValue = CGFloat.boundedValue(
-                    CGFloat(tuningManager.data.distance), availableWidth: geometry.size.width)
+                    CGFloat(tuningManager.tuningData.distance), availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
-                    Text("\(Int(tuningManager.data.distance))")
+                    Text("\(Int(tuningManager.tuningData.distance))")
                         .font(.system(size: 12))
                         .frame(width: NEEDLE_DIAMETER, height: NEEDLE_DIAMETER)
                         .overlay {
@@ -186,10 +186,11 @@ private struct NeedleLayer: View {
     }
 }
 
-fileprivate class ValueBuffer: ObservableObject {
+@Observable
+fileprivate class ValueBuffer {
     
     private let limit = 3000
-    @Published private(set)var values = [(Date, CGFloat)]()
+    private(set)var values = [(Date, CGFloat)]()
     
     func add(_ value: CGFloat) {
         if (values.count == limit) {
@@ -208,5 +209,5 @@ fileprivate extension CGFloat {
 
 #Preview {
     Grid()
-        .environmentObject(TuningManager())
+        .environment(TuningManager())
 }

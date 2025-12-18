@@ -64,10 +64,14 @@ enum Note: CaseIterable {
     }
 }
 
-struct TuningNote {
+struct TuningNote: Identifiable, Equatable {
     
     let note: Note
     let octave: Int
+    
+    var id: String {
+        return "\(note.name())\(octave)"
+    }
 }
 
 

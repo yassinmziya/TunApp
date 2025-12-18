@@ -18,14 +18,14 @@ class ChromaticTunerViewModel: ObservableObject {
     
     init(tuningManager: TuningManager) {
         self.tuningManager = tuningManager
-        
-        tuningManager.$data
-            .sink { [weak self] tuningData in
-                guard let self else {
-                    return
-                }
-                self.viewData = self.transformer.transform(tuningData)
-            }
-            .store(in: &cancellables)
+//        
+//        tuningManager.$tuningData
+//            .sink { [weak self] tuningData in
+//                guard let self else {
+//                    return
+//                }
+//                self.viewData = self.transformer.transform(tuningData)
+//            }
+//            .store(in: &cancellables)
     }
 }

@@ -11,12 +11,12 @@ import SwiftUI
 struct TunAppApp: App {
     
     @Environment(\.scenePhase) private var scenePhase
-    @StateObject var tuniningManager = TuningManager()
+    @State var tuniningManager = TuningManager()
     
     var body: some Scene {
         WindowGroup {
             Tuner()
-                .environmentObject(tuniningManager)
+                .environment(tuniningManager)
                 .onChange(of: scenePhase) { phase in
                     switch phase {
                     case .active:

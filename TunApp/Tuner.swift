@@ -10,7 +10,7 @@ import SwiftUI
 struct Tuner: View {
     
     @State var showSheet = true
-    @EnvironmentObject var tuningManager: TuningManager
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         ZStack {
@@ -28,50 +28,31 @@ struct Tuner: View {
             }
         }
         .sheet(isPresented: $showSheet) {
-            MainContent()
+            SheetContent()
+                .environment(tuningManager)
+                .presentationDetents([.medium])
+                .presentationBackgroundInteraction(.enabled)
+                .interactiveDismissDisabled()
         }
     }
 }
 
-private struct MainContent: View {
-    
-    @EnvironmentObject var tuningManager: TuningManager
-    @State var usingFlats = true
+private struct SheetContent: View {
     
     var body: some View {
-        VStack {
-            Spacer()
-            let note = tuningManager.data.note
-            let noteName = note?.name(usingFlats: usingFlats)
-            let octave = note != nil ? String(tuningManager.data.ocatave) : ""
-            Text(noteName ?? "-")
-                .font(.system(size: 96))
-            + Text("\(octave)")
-                .font(.system(size: 48))
-                .baselineOffset(36)
-            
-            Text("Frequency: \(Int(tuningManager.data.pitch)) Hz")
-                .font(.system(size: 24))
-            Text("Distance: \(tuningManager.data.distance)")
-                .font(.system(size: 16))
-            Text("Amplitude: \(tuningManager.data.amplitude)")
-                .font(.system(size: 16))
-            Spacer()
-            HStack {
-                Spacer()
-                Toggle(isOn: $usingFlats) {
-                    Text("\(TuningUtils.sharpSymbol)/\(TuningUtils.flatSymbol)")
-                }
+        TabView {
+            Tab("Chromatic", systemImage: "tuningfork") {
+                ChromaticTuner()
             }
-            .padding()
+            Tab("Presets", systemImage: "guitars") {
+                PresetTuner(tuningPreset: .standard)
+            }
         }
-        .presentationDetents([.medium])
-        .presentationBackgroundInteraction(.enabled)
-        .interactiveDismissDisabled()
     }
+    
 }
 
 #Preview {
     Tuner()
-        .environmentObject(TuningManager())
+        .environment(TuningManager())
 }
