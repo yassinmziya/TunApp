@@ -1,5 +1,5 @@
 //
-//  Tuner.swift
+//  TunerScreen.swift
 //  TunApp
 //
 //  Created by Yassin Mziya on 10/13/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Tuner: View {
+struct TunerScreen: View {
     
     @State var showSheet = true
     @Environment(TuningManager.self) var tuningManager
@@ -72,6 +72,6 @@ private struct SheetContent: View {
 }
 
 #Preview {
-    Tuner()
+    TunerScreen()
         .environment(TuningManager())
 }

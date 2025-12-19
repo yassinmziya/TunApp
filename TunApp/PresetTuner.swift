@@ -18,25 +18,21 @@ struct PresetTuner: View {
     }
     
     var body: some View {
-        VStack(spacing: 32) {
-            HStack {
-                ForEach(tuningPreset.notes.indices, id: \.self) { index in
-                    let tuningNote = tuningPreset.notes[index]
-                    HeadstockButton(
-                        tuningNote: tuningNote,
-                        isActive: tuningNote == tuningManager.tuningNote
-                    ) {
-                        tuningManager.tuningNote = tuningNote
-                    }
-                    if index < tuningPreset.notes.count - 1 {
-                        Spacer()
-                    }
+        HStack {
+            ForEach(tuningPreset.notes.indices, id: \.self) { index in
+                let tuningNote = tuningPreset.notes[index]
+                HeadstockButton(
+                    tuningNote: tuningNote,
+                    isActive: tuningNote == tuningManager.tuningNote
+                ) {
+                    tuningManager.tuningNote = tuningNote
+                }
+                if index < tuningPreset.notes.count - 1 {
+                    Spacer()
                 }
             }
-            .padding(.horizontal)
-            
-            Text(String(describing: tuningManager.tuningData.distance))
         }
+        .padding(.horizontal)
     }
 }
 
@@ -46,7 +42,7 @@ fileprivate struct HeadstockButton: View {
     let isActive: Bool
     let action: () -> Void
     
-    private let RADIUS: CGFloat = 48
+    private let RADIUS: CGFloat = 56
     
     var body: some View {
         Button(action: action) {

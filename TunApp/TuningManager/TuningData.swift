@@ -9,11 +9,7 @@ struct TuningData: Equatable {
     
     var pitch: Float = 0.0
     var amplitude: Float = 0.0
-    
-    var noteIndex: Int = 0 // DEPRECATED
-    
     var ocatave: Int = 0
     var distance: Float = 0.0
-    
     var note: Note?
 }

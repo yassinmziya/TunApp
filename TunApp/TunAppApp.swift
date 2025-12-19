@@ -15,10 +15,10 @@ struct TunAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            Tuner()
+            TunerScreen()
                 .environment(tuniningManager)
-                .onChange(of: scenePhase) { phase in
-                    switch phase {
+                .onChange(of: scenePhase) { _, newPhase in
+                    switch newPhase {
                     case .active:
                         tuniningManager.start()
                     case .background, .inactive:
