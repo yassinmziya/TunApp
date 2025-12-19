@@ -17,10 +17,10 @@ struct TunerScreen: View {
             Grid()
             VStack {
                 HStack {
-                    Text(TuningUtils.flatSymbol)
+                    Text(String.flatSymbol)
                         .font(.system(size: 36))
                     Spacer()
-                    Text(TuningUtils.sharpSymbol)
+                    Text(String.sharpSymbol)
                         .font(.system(size: 36))
                 }
                 .padding()
@@ -56,7 +56,6 @@ private struct SheetContent: View {
                 PresetTuner(tuningPreset: .standard)
             }
         }
-        .glassEffect()
         .onChange(of: selection) { oldValue, newValue in
             switch newValue {
             case .chromatic:

@@ -34,7 +34,7 @@ struct ChromaticTuner: View {
             HStack {
                 Spacer()
                 Toggle(isOn: $usingFlats) {
-                    Text("\(TuningUtils.sharpSymbol)/\(TuningUtils.flatSymbol)")
+                    Text("\(String.sharpSymbol)/\(String.flatSymbol)")
                 }
             }
             .padding()

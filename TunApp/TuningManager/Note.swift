@@ -7,6 +7,12 @@
 
 import Foundation
 
+extension String {
+    
+    static let sharpSymbol = "♯"
+    static let flatSymbol = "♭"
+}
+
 /**
  Represents a note within the reference window
  */
