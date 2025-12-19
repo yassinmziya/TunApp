@@ -17,14 +17,19 @@ struct TunAppApp: App {
         WindowGroup {
             TunerScreen()
                 .environment(tuniningManager)
+                .onAppear() {
+                    tuniningManager.resume()
+                }
                 .onChange(of: scenePhase) { _, newPhase in
                     switch newPhase {
                     case .active:
-                        tuniningManager.start()
+                        if !tuniningManager.engine.avEngine.isRunning {
+                            tuniningManager.resume()
+                        }
                     case .background, .inactive:
-                        tuniningManager.stop()
+                        tuniningManager.pause()
                     default:
-                        tuniningManager.stop()
+                        break
                     }
                 }
         }
