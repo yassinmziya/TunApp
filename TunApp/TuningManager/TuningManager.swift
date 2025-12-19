@@ -21,7 +21,8 @@ class TuningManager: HasAudioEngine {
     // MARK: Observable data
     
     var tuningData = TuningData()
-    var tuningNote: TuningNote? = TuningPreset.standard.notes.first
+    var tuningPreset: TuningPreset?
+    var tuningNote: TuningNote?
     
     // MARK: Private 
     
@@ -63,8 +64,10 @@ class TuningManager: HasAudioEngine {
                 return
             }
             var noteDetection: NoteDetector.NoteDetection?
-            if let tuningNote {
-                noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
+            if let tuningPreset {
+                if let tuningNote {
+                    noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
+                }
             } else {
                 noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch)
             }

@@ -13,45 +13,30 @@ struct PresetTuner: View {
     
     let tuningPreset: TuningPreset
     
+    init(tuningPreset: TuningPreset) {
+        self.tuningPreset = tuningPreset
+    }
+    
     var body: some View {
-//        HStack(alignment: .top) {
-//            VStack(spacing: 40) {
-//                ForEach(tuningPreset.notes.prefix(3).reversed()) { tuningNote in
-//                    HeadstockButton(
-//                        tuningNote: tuningNote,
-//                        isActive: tuningNote == tuningManager.tuningNote
-//                    ) {
-//                        tuningManager.tuningNote = tuningNote
-//                    }
-//                }
-//            }
-//            Spacer()
-//            VStack(spacing: 40) {
-//                ForEach(tuningPreset.notes.suffix(3)) { tuningNote in
-//                    HeadstockButton(
-//                        tuningNote: tuningNote,
-//                        isActive: tuningNote == tuningManager.tuningNote
-//                    ) {
-//                        tuningManager.tuningNote = tuningNote
-//                    }
-//                }
-//            }
-//        }
-        HStack {
-            ForEach(tuningPreset.notes.indices, id: \.self) { index in
-                let tuningNote = tuningPreset.notes[index]
-                HeadstockButton(
-                    tuningNote: tuningNote,
-                    isActive: tuningNote == tuningManager.tuningNote
-                ) {
-                    tuningManager.tuningNote = tuningNote
-                }
-                if index < tuningPreset.notes.count - 1 {
-                    Spacer()
+        VStack(spacing: 32) {
+            HStack {
+                ForEach(tuningPreset.notes.indices, id: \.self) { index in
+                    let tuningNote = tuningPreset.notes[index]
+                    HeadstockButton(
+                        tuningNote: tuningNote,
+                        isActive: tuningNote == tuningManager.tuningNote
+                    ) {
+                        tuningManager.tuningNote = tuningNote
+                    }
+                    if index < tuningPreset.notes.count - 1 {
+                        Spacer()
+                    }
                 }
             }
+            .padding(.horizontal)
+            
+            Text(String(describing: tuningManager.tuningData.distance))
         }
-        .padding(.horizontal)
     }
 }
 

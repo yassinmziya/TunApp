@@ -90,7 +90,7 @@ enum TuningPreset {
                 TuningNote(note: .d, octave: 3),
                 TuningNote(note: .g, octave: 3),
                 TuningNote(note: .b, octave: 3),
-                TuningNote(note: .e, octave: 3)
+                TuningNote(note: .e, octave: 4)
             ]
         case .dropD:
             return [

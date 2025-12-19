@@ -133,6 +133,10 @@ private struct NeedleLayer: View {
     
     @Environment(TuningManager.self) var tuningManager
     
+    var needleText: String {
+        return tuningManager.tuningData.note != nil ? "\(Int(tuningManager.tuningData.distance))" : ""
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -147,9 +151,11 @@ private struct NeedleLayer: View {
                 // Needle
                 let strokeColor = tuningManager.tuningData.distance < 0.02 ? Color.green : .red
                 let xValue = CGFloat.boundedValue(
-                    CGFloat(tuningManager.tuningData.distance), availableWidth: geometry.size.width)
+                    CGFloat(tuningManager.tuningData.distance),
+                    availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
-                    Text("\(Int(tuningManager.tuningData.distance))")
+ 
+                    Text(needleText)
                         .font(.system(size: 12))
                         .frame(width: NEEDLE_DIAMETER, height: NEEDLE_DIAMETER)
                         .overlay {
@@ -203,7 +209,8 @@ fileprivate class ValueBuffer {
 fileprivate extension CGFloat {
     
     static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
-        return (value * availableWidth / 200.0).rounded()
+        let limitedValue = Swift.max(Swift.min(100, value), -100)
+        return (limitedValue * availableWidth / 200.0).rounded()
     }
 }
 
