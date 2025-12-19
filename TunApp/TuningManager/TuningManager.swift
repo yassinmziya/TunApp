@@ -51,7 +51,32 @@ class TuningManager: HasAudioEngine {
         self.tracker = PitchTap(mic) { [weak self] pitch, amp in
             self?.update(pitch[0], amp[0])
         }
-        tracker?.start()
+    }
+    
+    // 1. Separate your startup logic from init()
+    func resume() {
+        guard !engine.avEngine.isRunning else { return }
+        
+        do {
+            // Restart the engine first
+            try engine.start()
+            // 2. Explicitly restart the tap after engine is running
+            self.tracker = PitchTap(mic) { [weak self] pitch, amp in
+                self?.update(pitch[0], amp[0])
+            }
+            tracker?.start()
+            print("Tuner resumed successfully")
+        } catch {
+            print("Failed to resume tuner: \(error)")
+        }
+    }
+
+    func pause() {
+        // 3. Stop the tap BEFORE stopping the engine to avoid hosing the connection
+        tracker?.stop()
+        tracker = nil
+        engine.stop()
+        print("Tuner paused")
     }
     
     func update(_ pitch: AUValue, _ amp: AUValue) {
