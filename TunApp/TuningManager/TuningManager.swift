@@ -9,42 +9,49 @@ import AudioKit
 import AudioKitEX
 import Foundation
 import SoundpipeAudioKit
+import SwiftUI
 
-class TuningManager: ObservableObject, HasAudioEngine {
+@Observable
+class TuningManager: HasAudioEngine {
     
-    @Published var data = TuningData()
+    // MARK: HasAudioEngine
     
     let engine = AudioEngine()
     
-    private lazy var initialDevice = {
-        guard let device = engine.inputDevice else {
-            fatalError()
-        }
-        return device
-    }()
+    // MARK: Observable data
     
-    private lazy var mic = {
-        guard let input = engine.input else {
-            fatalError()
-        }
-        return input
-    }()
+    var tuningData = TuningData()
+    var tuningPreset: TuningPreset?
+    var tuningNote: TuningNote?
     
-    private lazy var tappableNodeA = Fader(mic)
-    private lazy var tappableNodeB = Fader(tappableNodeA)
-    private lazy var tappableNodeC = Fader(tappableNodeB)
-    private lazy var silence =  Fader(tappableNodeC, gain: 0)
+    // MARK: Private 
     
-    private lazy var tracker = PitchTap(mic) { pitch, amp in
-        self.update(pitch[0], amp[0])
-    }
+    private let signalProcessor = SignalProcessor()
+    private let noteDetector = NoteDetector()
     
-    private lazy var signalProcessor = SignalProcessor()
-    private lazy var noteDetector = NoteDetector()
+    private let mic: AudioEngine.InputNode
+    private let outputFader: Fader
+    private var tracker: PitchTap?
     
     init() {
+        guard let mic = engine.input else {
+            fatalError("Mic not found")
+        }
+        
+        self.mic = mic
+        
+        
+        let tappableNodeA = Fader(mic)
+        let tappableNodeB = Fader(tappableNodeA)
+        let tappableNodeC = Fader(tappableNodeB)
+        let silence = Fader(tappableNodeC, gain: 0)
+        self.outputFader = silence
         engine.output = silence
-        tracker.start()
+        
+        self.tracker = PitchTap(mic) { [weak self] pitch, amp in
+            self?.update(pitch[0], amp[0])
+        }
+        tracker?.start()
     }
     
     func update(_ pitch: AUValue, _ amp: AUValue) {
@@ -56,16 +63,23 @@ class TuningManager: ObservableObject, HasAudioEngine {
                 self.updateData(nil, amplitude: amp)
                 return
             }
-            let noteDetection = noteDetector.detectNote(processedPitch)
+            var noteDetection: NoteDetector.NoteDetection?
+            if let tuningPreset {
+                if let tuningNote {
+                    noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
+                }
+            } else {
+                noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch)
+            }
             self.updateData(noteDetection, amplitude: amp)
         }
     }
     
     private func updateData(_ noteDetection: NoteDetector.NoteDetection?, amplitude: Float) {
-        data.pitch = noteDetection?.adjustedFrequency ?? 0.0
-        data.amplitude = amplitude
-        data.ocatave = noteDetection?.octave ?? 0
-        data.distance = noteDetection?.deviation ?? 0.0
-        data.note = noteDetection?.note
+        tuningData.pitch = noteDetection?.adjustedFrequency ?? 0.0
+        tuningData.amplitude = amplitude
+        tuningData.ocatave = noteDetection?.octave ?? 0
+        tuningData.distance = noteDetection?.deviation ?? 0.0
+        tuningData.note = noteDetection?.note
     }
 }

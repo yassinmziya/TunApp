@@ -11,7 +11,7 @@ import SwiftUI
 
 struct Grid: View {
     
-    @EnvironmentObject var tuningManager: TuningManager
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         ZStack {
@@ -46,7 +46,7 @@ fileprivate extension View {
 struct GridLinesLayer: View {
     
     private let strokeWidth: CGFloat = 1.0
-    private let strokeColor = Color.gray.opacity(0.1)
+    private let strokeColor = Color.gray.opacity(0.25)
     private let numberOfSquaresAccrossWidth = 18.0
     private let speed: CGFloat = 32
     
@@ -89,13 +89,14 @@ struct GridLinesLayer: View {
 private let NEEDLE_DIAMETER: CGFloat = 40
 private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
 private let NEEDLE_TOP_OFFSET: CGFloat = 32
+private let TICK_RADIUS: CGFloat = 3
 
 private struct TickerLayer: View {
     
     private let speed: CGFloat = 32
     
-    @StateObject var valueBuffer = ValueBuffer()
-    @EnvironmentObject var tuningManager: TuningManager
+    @State var valueBuffer = ValueBuffer()
+    @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -110,14 +111,15 @@ private struct TickerLayer: View {
                     path.addEllipse(
                         in: CGRect(
                             origin: CGPoint(x: x, y: y),
-                            size: CGSize(width: 4, height: 4)
+                            size: CGSize(
+                                width: TICK_RADIUS, height: TICK_RADIUS)
                         )
                     )
                     context.fill(path, with: .color(.red))
                 }
             }
         }
-        .onReceive(tuningManager.$data) { tuningData in
+        .onChange(of: tuningManager.tuningData) { _, tuningData in
             guard let _  = tuningData.note else { return }
             valueBuffer.add(CGFloat(tuningData.distance))
         }
@@ -129,7 +131,11 @@ private struct TickerLayer: View {
 
 private struct NeedleLayer: View {
     
-    @EnvironmentObject var tuningManager: TuningManager
+    @Environment(TuningManager.self) var tuningManager
+    
+    var needleText: String {
+        return tuningManager.tuningData.note != nil ? "\(Int(tuningManager.tuningData.distance))" : ""
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -143,11 +149,13 @@ private struct NeedleLayer: View {
                 .stroke(Color.gray, lineWidth: 1.2)
                 
                 // Needle
-                let strokeColor = tuningManager.data.distance < 0.02 ? Color.green : .red
+                let strokeColor = tuningManager.tuningData.distance < 0.02 ? Color.green : .red
                 let xValue = CGFloat.boundedValue(
-                    CGFloat(tuningManager.data.distance), availableWidth: geometry.size.width)
+                    CGFloat(tuningManager.tuningData.distance),
+                    availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
-                    Text("\(Int(tuningManager.data.distance))")
+ 
+                    Text(needleText)
                         .font(.system(size: 12))
                         .frame(width: NEEDLE_DIAMETER, height: NEEDLE_DIAMETER)
                         .overlay {
@@ -184,10 +192,11 @@ private struct NeedleLayer: View {
     }
 }
 
-fileprivate class ValueBuffer: ObservableObject {
+@Observable
+fileprivate class ValueBuffer {
     
     private let limit = 3000
-    @Published private(set)var values = [(Date, CGFloat)]()
+    private(set)var values = [(Date, CGFloat)]()
     
     func add(_ value: CGFloat) {
         if (values.count == limit) {
@@ -200,11 +209,12 @@ fileprivate class ValueBuffer: ObservableObject {
 fileprivate extension CGFloat {
     
     static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
-        return (value * availableWidth / 200.0).rounded()
+        let limitedValue = Swift.max(Swift.min(100, value), -100)
+        return (limitedValue * availableWidth / 200.0).rounded()
     }
 }
 
 #Preview {
     Grid()
-        .environmentObject(TuningManager())
+        .environment(TuningManager())
 }
