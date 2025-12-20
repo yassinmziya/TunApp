@@ -20,7 +20,7 @@ class TuningManager: HasAudioEngine {
     
     // MARK: Observable data
     
-    var tuningData = TuningData()
+    var tuningData: TuningData?
     var tuningPreset: TuningPreset?
     var tuningNote: TuningNote?
     
@@ -37,9 +37,7 @@ class TuningManager: HasAudioEngine {
         guard let mic = engine.input else {
             fatalError("Mic not found")
         }
-        
         self.mic = mic
-        
         
         let tappableNodeA = Fader(mic)
         let tappableNodeB = Fader(tappableNodeA)
@@ -53,14 +51,12 @@ class TuningManager: HasAudioEngine {
         }
     }
     
-    // 1. Separate your startup logic from init()
     func resume() {
         guard !engine.avEngine.isRunning else { return }
         
         do {
             // Restart the engine first
             try engine.start()
-            // 2. Explicitly restart the tap after engine is running
             self.tracker = PitchTap(mic) { [weak self] pitch, amp in
                 self?.update(pitch[0], amp[0])
             }
@@ -72,7 +68,6 @@ class TuningManager: HasAudioEngine {
     }
 
     func pause() {
-        // 3. Stop the tap BEFORE stopping the engine to avoid hosing the connection
         tracker?.stop()
         tracker = nil
         engine.stop()
@@ -85,26 +80,33 @@ class TuningManager: HasAudioEngine {
                 return
             }
             guard let processedPitch = self.signalProcessor.process(pitch, amplitude: amp) else {
-                self.updateData(nil, amplitude: amp)
+                self.tuningData = nil
                 return
             }
             var noteDetection: NoteDetector.NoteDetection?
-            if let tuningPreset {
+            if tuningPreset != nil {
                 if let tuningNote {
                     noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
                 }
             } else {
                 noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch)
             }
-            self.updateData(noteDetection, amplitude: amp)
+            self.tuningData = noteDetection?.tuningData(amplitude: amp)
         }
     }
+}
+
+// MARK: NoteDetection + Utils
+
+fileprivate extension NoteDetector.NoteDetection {
     
-    private func updateData(_ noteDetection: NoteDetector.NoteDetection?, amplitude: Float) {
-        tuningData.pitch = noteDetection?.adjustedFrequency ?? 0.0
-        tuningData.amplitude = amplitude
-        tuningData.ocatave = noteDetection?.octave ?? 0
-        tuningData.distance = noteDetection?.deviation ?? 0.0
-        tuningData.note = noteDetection?.note
+    func tuningData(amplitude: Float) -> TuningData {
+        return TuningData(
+            pitch: adjustedFrequency,
+            amplitude: amplitude,
+            ocatave: octave,
+            distance: deviation,
+            note: note
+        )
     }
 }

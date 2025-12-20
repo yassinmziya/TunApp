@@ -12,23 +12,39 @@ struct ChromaticTuner: View {
     @Environment(TuningManager.self) var tuningManager
     @State var usingFlats = true
     
+    var tuningData: TuningData? {
+        return tuningManager.tuningData
+    }
+    
+    var noteName: String {
+        guard let note =  tuningData?.note else {
+            return "-"
+        }
+        return note.name(usingFlats: usingFlats)
+    }
+    
+    var octave: String {
+        guard let octave = tuningData?.ocatave else {
+            return ""
+        }
+        return String(octave)
+    }
+    
+    
     var body: some View {
         VStack {
             Spacer()
-            let note = tuningManager.tuningData.note
-            let noteName = note?.name(usingFlats: usingFlats)
-            let octave = note != nil ? String(tuningManager.tuningData.ocatave) : ""
-            Text(noteName ?? "-")
+            Text(noteName)
                 .font(.system(size: 96))
             + Text("\(octave)")
                 .font(.system(size: 48))
                 .baselineOffset(36)
             
-            Text("Frequency: \(Int(tuningManager.tuningData.pitch)) Hz")
+            Text("Frequency: \(Int(tuningData?.pitch ?? 0)) Hz")
                 .font(.system(size: 24))
-            Text("Distance: \(tuningManager.tuningData.distance)")
+            Text("Distance: \(tuningData?.distance ?? 0)")
                 .font(.system(size: 16))
-            Text("Amplitude: \(tuningManager.tuningData.amplitude)")
+            Text("Amplitude: \(tuningData?.amplitude ?? 0)")
                 .font(.system(size: 16))
             Spacer()
             HStack {

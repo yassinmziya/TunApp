@@ -89,11 +89,12 @@ struct GridLinesLayer: View {
 private let NEEDLE_DIAMETER: CGFloat = 40
 private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
 private let NEEDLE_TOP_OFFSET: CGFloat = 32
-private let TICK_RADIUS: CGFloat = 3
 
 private struct TickerLayer: View {
     
-    private let speed: CGFloat = 32
+    private let SPEED: CGFloat = 32.0
+    private let TICK_HEIGHT: CGFloat = 4.0
+    private let TICK_WIDTH: CGFloat = 3.0
     
     @State var valueBuffer = ValueBuffer()
     @Environment(TuningManager.self) var tuningManager
@@ -101,26 +102,24 @@ private struct TickerLayer: View {
     var body: some View {
         TimelineView(.animation) { timeline in
             Canvas { context, size in
-                for value in valueBuffer.values {
+                valueBuffer.values.forEach { (timeStamp, pitch) in
                     var path = Path()
                     let xOffset = size.width / 2.0
-                    let x = xOffset + CGFloat.boundedValue(value.1, availableWidth: size.width)
-                    let elapsed = timeline.date.timeIntervalSince(value.0)
+                    let x = xOffset + CGFloat.boundedValue(pitch, availableWidth: size.width)
+                    let elapsed = timeline.date.timeIntervalSince(timeStamp)
                     let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
-                    let y = yOffset + speed * elapsed
-                    path.addEllipse(
-                        in: CGRect(
-                            origin: CGPoint(x: x, y: y),
-                            size: CGSize(
-                                width: TICK_RADIUS, height: TICK_RADIUS)
-                        )
-                    )
+                    let y = yOffset + SPEED * elapsed
+                    path.addRect(CGRect(
+                        origin: CGPoint(x: x, y: y),
+                        size: CGSize(
+                            width: TICK_WIDTH, height: TICK_HEIGHT)
+                    ))
                     context.fill(path, with: .color(.red))
                 }
             }
         }
         .onChange(of: tuningManager.tuningData) { _, tuningData in
-            guard let _  = tuningData.note else { return }
+            guard let tuningData else { return }
             valueBuffer.add(CGFloat(tuningData.distance))
         }
     }
@@ -133,8 +132,32 @@ private struct NeedleLayer: View {
     
     @Environment(TuningManager.self) var tuningManager
     
+    var tuningData: TuningData? {
+        return tuningManager.tuningData
+    }
+    
+    var strokeColor: Color {
+        guard let tuningData else {
+            return .white
+        }
+        
+        return tuningData.distance < 0.02 ? .green : .red
+    }
+    
     var needleText: String {
-        return tuningManager.tuningData.note != nil ? "\(Int(tuningManager.tuningData.distance))" : ""
+        guard let tuningData else {
+            return ""
+        }
+        return "\(Int(tuningData.distance))"
+    }
+    
+    func getXValue(availableWidth: CGFloat) -> CGFloat {
+        guard let tuningData else {
+            return .zero
+        }
+        return CGFloat.boundedValue(
+            CGFloat(tuningData.distance),
+            availableWidth: availableWidth)
     }
     
     var body: some View {
@@ -149,10 +172,7 @@ private struct NeedleLayer: View {
                 .stroke(Color.gray, lineWidth: 1.2)
                 
                 // Needle
-                let strokeColor = tuningManager.tuningData.distance < 0.02 ? Color.green : .red
-                let xValue = CGFloat.boundedValue(
-                    CGFloat(tuningManager.tuningData.distance),
-                    availableWidth: geometry.size.width)
+                let xValue = getXValue(availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
  
                     Text(needleText)
@@ -209,8 +229,9 @@ fileprivate class ValueBuffer {
 fileprivate extension CGFloat {
     
     static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
-        let limitedValue = Swift.max(Swift.min(100, value), -100)
-        return (limitedValue * availableWidth / 200.0).rounded()
+        let limitedValue = Swift.max(Swift.min(100, value), -100) // limit raw cent value so that needle doesn't fly off screen
+        let padding = 64.0
+        return ((availableWidth - padding) * limitedValue / 200.0).rounded()
     }
 }
 
