@@ -6,10 +6,9 @@
 //
 
 struct TuningData: Equatable {
-    
-    var pitch: Float = 0.0
-    var amplitude: Float = 0.0
-    var ocatave: Int = 0
-    var distance: Float = 0.0
-    var note: Note?
+    let pitch: Float
+    let amplitude: Float
+    let ocatave: Int
+    let distance: Float
+    let note: Note
 }
