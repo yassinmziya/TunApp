@@ -11,8 +11,10 @@ import SwiftUI
 
 struct TunerScreen: View {
     
-    @State var showSheet = true
     @Environment(TuningManager.self) var tuningManager
+    
+    @State private var showSheet = true 
+    @State private var presentationDetent = PresentationDetent.fraction60
     
     var body: some View {
         ZStack {
@@ -30,9 +32,9 @@ struct TunerScreen: View {
             }
         }
         .sheet(isPresented: $showSheet) {
-            SheetContent()
+            SheetContent(presentationDetent: $presentationDetent)
                 .environment(tuningManager)
-                .presentationDetents([.medium])
+                .presentationDetents([.fraction60, .large], selection: $presentationDetent)
                 .presentationBackgroundInteraction(.enabled)
                 .interactiveDismissDisabled()
         }
@@ -41,35 +43,64 @@ struct TunerScreen: View {
 
 private struct SheetContent: View {
     
-    private enum SheetTab: Int {
-        case chromatic = 0, presets
-    }
-    
     @Environment(TuningManager.self) var tuningManager
     
-    @State private var selection: SheetTab = .chromatic
+    @State private var showSettings = false
+    @Binding var presentationDetent: PresentationDetent
     
     var body: some View {
-        TabView(selection: $selection) {
-            Tab("Chromatic", systemImage: "tuningfork", value: SheetTab.chromatic) {
-                ChromaticTuner()
+        NavigationStack {
+            Group {
+                if showSettings {
+                    SettingsScreen()
+                } else {
+                    if let tuningPreset = tuningManager.tuningPreset {
+                        PresetTuner(tuningPreset: tuningPreset)
+                    } else {
+                        ChromaticTuner()
+                    }
+                }
             }
-            Tab("Presets", systemImage: "guitars", value: SheetTab.presets) {
-                PresetTuner(tuningPreset: .standard)
-            }
-        }
-        .onChange(of: selection) { oldValue, newValue in
-            switch newValue {
-            case .chromatic:
-                tuningManager.tuningPreset = nil
-                tuningManager.tuningNote = nil
-            default:
-                tuningManager.tuningPreset = .standard
-                tuningManager.tuningNote = nil
+            .onChange(of: presentationDetent, { _, newValue in
+                showSettings = newValue == PresentationDetent.large
+            })
+            .toolbar {
+                if showSettings {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close settings", systemImage: "xmark", action: didTapCloseCta)
+                    }
+                } else {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Settings", systemImage: "gear", action: didTapSettingsCta)
+                    }
+                }
             }
         }
     }
     
+    private func didTapSettingsCta() {
+        withAnimation {
+            showSettings = true
+            presentationDetent = .large
+        }
+    }
+    
+    private func didTapCloseCta() {
+        withAnimation {
+            showSettings = false
+            presentationDetent = .fraction60
+        }
+    }
+    
+}
+
+// MARK: - PresentationDetent + Utils
+
+extension PresentationDetent {
+    
+    static var fraction60: PresentationDetent {
+        return .fraction(0.6)
+    }
 }
 
 #Preview {
