@@ -46,11 +46,15 @@ fileprivate struct HeadstockButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text(tuningNote.note.name())
-                .frame(width: RADIUS, height: RADIUS)
+            Group {
+                Text(tuningNote.note.name())
+                    .font(.system(size: 24))
+                + Text("\(tuningNote.octave)")
+                    .font(.system(size: 16))
+            }
+            .frame(width: RADIUS, height: RADIUS)
         }
         .clipShape(Circle())
-        .glassEffect(.regular.tint(isActive ? .blue : nil))
         .tint(.primary)
         .overlay {
             Circle()
