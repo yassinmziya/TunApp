@@ -9,6 +9,8 @@ import SwiftUI
 
 // MARK: - Grid
 
+fileprivate let GRID_SPEED: CGFloat = 12
+
 struct Grid: View {
     
     @Environment(TuningManager.self) var tuningManager
@@ -48,7 +50,6 @@ struct GridLinesLayer: View {
     private let strokeWidth: CGFloat = 1.0
     private let strokeColor = Color.gray.opacity(0.25)
     private let numberOfSquaresAccrossWidth = 18.0
-    private let speed: CGFloat = 32
     
     @State private var startDate = Date()
 
@@ -58,7 +59,7 @@ struct GridLinesLayer: View {
                 Canvas { context, size in
                     let spacing: CGFloat = size.width/numberOfSquaresAccrossWidth
                     let elapsed = timeline.date.timeIntervalSince(startDate)
-                    let rawOffset = elapsed * speed
+                    let rawOffset = elapsed * GRID_SPEED
                     let offset = rawOffset.truncatingRemainder(dividingBy: spacing)
                     
                     let numberOfHorizontalLines = size.height / spacing
@@ -89,32 +90,33 @@ struct GridLinesLayer: View {
 private let NEEDLE_DIAMETER: CGFloat = 40
 private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
 private let NEEDLE_TOP_OFFSET: CGFloat = 32
+private let TICK_WIDTH: CGFloat = 3.0
 
 private struct TickerLayer: View {
     
-    private let SPEED: CGFloat = 32.0
-    private let TICK_HEIGHT: CGFloat = 4.0
-    private let TICK_WIDTH: CGFloat = 3.0
+    private let TICK_HEIGHT: CGFloat = 1.0
     
     @State var valueBuffer = ValueBuffer()
     @Environment(TuningManager.self) var tuningManager
     
     var body: some View {
         TimelineView(.animation) { timeline in
-            Canvas { context, size in
-                valueBuffer.values.forEach { (timeStamp, pitch) in
-                    var path = Path()
-                    let xOffset = size.width / 2.0
-                    let x = xOffset + CGFloat.boundedValue(pitch, availableWidth: size.width)
-                    let elapsed = timeline.date.timeIntervalSince(timeStamp)
-                    let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
-                    let y = yOffset + SPEED * elapsed
-                    path.addRect(CGRect(
-                        origin: CGPoint(x: x, y: y),
-                        size: CGSize(
-                            width: TICK_WIDTH, height: TICK_HEIGHT)
-                    ))
-                    context.fill(path, with: .color(.red))
+            ZStack {
+                Canvas { context, size in
+                    valueBuffer.values.forEach { (timeStamp, pitch) in
+                        var path = Path()
+                        let xOffset = size.width / 2.0
+                        let x = xOffset + CGFloat.boundedValue(pitch, availableWidth: size.width)
+                        let elapsed = timeline.date.timeIntervalSince(timeStamp)
+                        let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
+                        let y = yOffset + GRID_SPEED * elapsed
+                        path.addRect(CGRect(
+                            origin: CGPoint(x: x, y: y),
+                            size: CGSize(
+                                width: TICK_WIDTH, height: TICK_HEIGHT)
+                        ))
+                        context.fill(path, with: .color(.red))
+                    }
                 }
             }
         }
@@ -126,9 +128,20 @@ private struct TickerLayer: View {
 }
 
 
-// MARK: - CenterRulingLayer
+// MARK: - NeedleLayer
 
 private struct NeedleLayer: View {
+    
+    private struct Triangle: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            path.closeSubpath()
+            return path
+        }
+    }
     
     @Environment(TuningManager.self) var tuningManager
     
@@ -149,15 +162,6 @@ private struct NeedleLayer: View {
             return ""
         }
         return "\(Int(tuningData.distance))"
-    }
-    
-    func getXValue(availableWidth: CGFloat) -> CGFloat {
-        guard let tuningData else {
-            return .zero
-        }
-        return CGFloat.boundedValue(
-            CGFloat(tuningData.distance),
-            availableWidth: availableWidth)
     }
     
     var body: some View {
@@ -200,17 +204,17 @@ private struct NeedleLayer: View {
         }
     }
     
-    struct Triangle: Shape {
-        func path(in rect: CGRect) -> Path {
-            var path = Path()
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-            path.closeSubpath()
-            return path
+    private func getXValue(availableWidth: CGFloat) -> CGFloat {
+        guard let tuningData else {
+            return .zero
         }
+        return (TICK_WIDTH * 0.5) + CGFloat.boundedValue(
+            CGFloat(tuningData.distance),
+            availableWidth: availableWidth)
     }
 }
+
+// MARK: - ValueBuffer
 
 @Observable
 fileprivate class ValueBuffer {
@@ -226,6 +230,8 @@ fileprivate class ValueBuffer {
     }
 }
 
+// MARK: - CGFLoat + Utils
+
 fileprivate extension CGFloat {
     
     static func boundedValue(_ value: CGFloat, availableWidth: CGFloat) -> CGFloat {
@@ -234,6 +240,8 @@ fileprivate extension CGFloat {
         return ((availableWidth - padding) * limitedValue / 200.0).rounded()
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     Grid()
