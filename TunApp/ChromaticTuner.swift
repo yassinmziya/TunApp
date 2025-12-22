@@ -38,7 +38,6 @@ struct ChromaticTuner: View {
                 .font(.system(size: 96))
             + Text("\(octave)")
                 .font(.system(size: 48))
-                .baselineOffset(36)
             
             Text("Frequency: \(Int(tuningData?.pitch ?? 0)) Hz")
                 .font(.system(size: 24))

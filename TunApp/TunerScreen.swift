@@ -7,10 +7,14 @@
 
 import SwiftUI
 
+ // MARK: - TunerScreen
+
 struct TunerScreen: View {
     
-    @State var showSheet = true
     @Environment(TuningManager.self) var tuningManager
+    
+    @State private var showSheet = true 
+    @State private var presentationDetent = PresentationDetent.fraction60
     
     var body: some View {
         ZStack {
@@ -28,46 +32,111 @@ struct TunerScreen: View {
             }
         }
         .sheet(isPresented: $showSheet) {
-            SheetContent()
+            SheetContent(presentationDetent: $presentationDetent)
                 .environment(tuningManager)
-                .presentationDetents([.medium])
+                .presentationDetents([.fraction60, .large], selection: $presentationDetent)
                 .presentationBackgroundInteraction(.enabled)
                 .interactiveDismissDisabled()
         }
     }
 }
 
+// MARK: - SheetContent
+
 private struct SheetContent: View {
-    
-    private enum SheetTab: Int {
-        case chromatic = 0, presets
-    }
     
     @Environment(TuningManager.self) var tuningManager
     
-    @State private var selection: SheetTab = .chromatic
+    @State private var showSettings = false
+    @Binding var presentationDetent: PresentationDetent
     
     var body: some View {
-        TabView(selection: $selection) {
-            Tab("Chromatic", systemImage: "tuningfork", value: SheetTab.chromatic) {
-                ChromaticTuner()
+        NavigationStack {
+            VStack {
+                if (!showSettings) {
+                    HStack {
+                        TunerSettingsButton()
+                            .onTapGesture {
+                                didTapSettingsCta()
+                            }
+                        Spacer()
+                    }
+                    .padding()
+                    .padding(.top, 16)
+                    Spacer()
+                }
+                Group {
+                    if showSettings {
+                        SettingsScreen(tuningManager: tuningManager, handleDismiss: didTapCloseSettingsCta)
+                    } else {
+                        if let tuningPreset = tuningManager.tuningPreset {
+                            PresetTuner(tuningPreset: tuningPreset)
+                        } else {
+                            ChromaticTuner()
+                        }
+                    }
+                }
+                Spacer()
             }
-            Tab("Presets", systemImage: "guitars", value: SheetTab.presets) {
-                PresetTuner(tuningPreset: .standard)
-            }
-        }
-        .onChange(of: selection) { oldValue, newValue in
-            switch newValue {
-            case .chromatic:
-                tuningManager.tuningPreset = nil
-                tuningManager.tuningNote = nil
-            default:
-                tuningManager.tuningPreset = .standard
-                tuningManager.tuningNote = nil
-            }
+            .onChange(of: presentationDetent, { _, newValue in
+                withAnimation {
+                    showSettings = newValue == PresentationDetent.large
+                }
+            })
         }
     }
     
+    private func didTapSettingsCta() {
+        withAnimation {
+            showSettings = true
+            presentationDetent = .large
+        }
+    }
+    
+    private func didTapCloseSettingsCta() {
+        withAnimation {
+            showSettings = false
+            presentationDetent = .fraction60
+        }
+    }
+    
+}
+
+private struct TunerSettingsButton: View {
+    
+    @Environment(TuningManager.self) var tuningManager
+    
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(tuningManager.instrument.rawValue)
+                    Image(systemName: "chevron.right")
+                }
+                if let tuningPreset = tuningManager.tuningPreset {
+                    Text(tuningPreset.rawValue)
+                        .font(.system(size: 16))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+        }
+        .fixedSize()
+        .padding(.all, 8)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray)
+        }
+    }
+}
+
+// MARK: - PresentationDetent + Utils
+
+extension PresentationDetent {
+    
+    static var fraction60: PresentationDetent {
+        return .fraction(0.6)
+    }
 }
 
 #Preview {
