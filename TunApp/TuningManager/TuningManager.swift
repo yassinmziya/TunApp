@@ -20,9 +20,18 @@ class TuningManager: HasAudioEngine {
     
     // MARK: Observable data
     
-    var tuningData: TuningData?
-    var tuningPreset: TuningPreset?
+    private(set) var tuningData: TuningData?
+    var tuningPreset: TuningPreset? = .standard {
+        didSet {
+            #if DEBUG
+            if tuningPreset == nil {
+                assert(instrument == .chromatic, "tuning preset may only be nil when using chromatic tuner")
+            }
+            #endif
+        }
+    }
     var tuningNote: TuningNote?
+    private(set) var instrument: Instrument = .acousticGuitar
     
     // MARK: Private 
     
@@ -94,9 +103,23 @@ class TuningManager: HasAudioEngine {
             self.tuningData = noteDetection?.tuningData(amplitude: amp)
         }
     }
+    
+    func setTuningPreset(
+        instrument: Instrument,
+        tuningPreset: TuningPreset? = nil
+    ) {
+        self.instrument = instrument
+        
+        if case .chromatic = instrument {
+            self.tuningPreset = nil
+            self.tuningNote = nil
+            return
+        }
+        self.tuningPreset = tuningPreset
+    }
 }
 
-// MARK: NoteDetection + Utils
+// MARK: - NoteDetection + Utils
 
 fileprivate extension NoteDetector.NoteDetection {
     

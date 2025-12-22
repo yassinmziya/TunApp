@@ -7,10 +7,23 @@
 
 import SwiftUI
 
+fileprivate let OUTLINE_WIDTH: CGFloat = 1
+
 struct SettingsScreen: View {
     
-    @Environment(TuningManager.self) var tuningManager
-    @State private var selectedInstrument: Instrument = .acousticGuitar
+    private let tuningManager: TuningManager
+    
+    @State private var selectedInstrument: Instrument
+    private var handleDismiss: (() -> Void)?
+    
+    init(
+        tuningManager: TuningManager,
+        handleDismiss: (() -> Void)? = nil
+    ) {
+        self.tuningManager = tuningManager
+        self.selectedInstrument = tuningManager.instrument
+        self.handleDismiss = handleDismiss
+    }
     
     var body: some View {
         ScrollView(.vertical) {
@@ -24,39 +37,64 @@ struct SettingsScreen: View {
                                 isSelected: selectedInstrument == instrument
                             )
                             .onTapGesture {
-                                selectedInstrument = instrument
-                                switch instrument {
-                                case .chromatic:
-                                    tuningManager.tuningPreset = nil
-                                    tuningManager.tuningNote = nil
-                                default:
-                                    tuningManager.tuningPreset = .standard
-                                    tuningManager.tuningNote = TuningPreset.standard.notes.first
-                                }
+                                didSelectInstrument(instrument: instrument)
                             }
                         }
                     }
                     .padding(.vertical)
                 }
                 .scrollClipDisabled(true)
-                
-                VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
+                    if (selectedInstrument.tuningPresets.isNotEmpty) {
+                        Text("Tuning")
+                            .padding(.bottom, 8)
+                    }
                     ForEach(selectedInstrument.tuningPresets) { tuningPreset in
                         let isSelected = tuningPreset == tuningManager.tuningPreset
                         TuningPresetRow(
                             tuningPreset: tuningPreset,
                             isSelected: isSelected)
+                        .onTapGesture {
+                            didSelectTuningPreset(tuningPreset: tuningPreset)
+                        }
+                        
                         Divider()
-                            .frame(height: 2)
+                            .frame(height: OUTLINE_WIDTH)
                             .overlay(isSelected ? .blue : .gray)
                     }
                 }
                 Spacer()
             }
         }
-        // @maxime Nice!
+        // @max Nice!
         .scrollClipDisabled(true)
         .padding()
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close settings", systemImage: "xmark") {
+                    handleDismiss?()
+                }
+            }
+        }
+        
+    }
+    
+    private func didSelectInstrument(instrument: Instrument) {
+        selectedInstrument = instrument
+        if case .chromatic = instrument {
+            tuningManager.setTuningPreset(instrument: instrument)
+            return
+        }
+        tuningManager.setTuningPreset(
+            instrument: instrument,
+            tuningPreset: instrument.tuningPresets.first
+        )
+    }
+    
+    private func didSelectTuningPreset(tuningPreset: TuningPreset) {
+        tuningManager.setTuningPreset(
+            instrument: selectedInstrument,
+            tuningPreset: tuningPreset)
     }
 }
 
@@ -77,8 +115,8 @@ fileprivate struct InstrumentCard: View {
             .overlay {
                 if (isSelected) {
                     RoundedRectangle(cornerRadius: 12)
-                        .inset(by: 2)
-                        .stroke(style: .init(lineWidth: 4))
+                        .inset(by: OUTLINE_WIDTH/2.0)
+                        .stroke(style: .init(lineWidth: OUTLINE_WIDTH))
                     
                 }
             }
@@ -111,8 +149,6 @@ fileprivate struct InstrumentCard: View {
 
 fileprivate struct TuningPresetRow: View {
     
-    @Environment(TuningManager.self) var tuningManager
-    
     let tuningPreset: TuningPreset
     let isSelected: Bool
     
@@ -139,25 +175,17 @@ fileprivate struct TuningPresetRow: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 24, height: .infinity)
+                    .frame(width: 24, height: 24)
                     .foregroundColor(isSelected ? .blue : .gray)
             }
-        }
-        .onTapGesture {
-            didSelectTuningPreset(tuningPresent: tuningPreset)
         }
     }
     
     private func noteName(tuningNote: TuningNote) -> String {
         return "\(tuningNote.note.name())\(tuningNote.octave)"
     }
-    
-    private func didSelectTuningPreset(tuningPresent: TuningPreset) {
-        tuningManager.tuningPreset = tuningPresent
-    }
 }
 
 #Preview {
-    SettingsScreen()
-        .environment(TuningManager())
+    SettingsScreen(tuningManager: TuningManager())
 }

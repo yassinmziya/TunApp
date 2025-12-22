@@ -41,6 +41,8 @@ struct TunerScreen: View {
     }
 }
 
+// MARK: - SheetContent
+
 private struct SheetContent: View {
     
     @Environment(TuningManager.self) var tuningManager
@@ -51,9 +53,21 @@ private struct SheetContent: View {
     var body: some View {
         NavigationStack {
             VStack {
+                if (!showSettings) {
+                    HStack {
+                        TunerSettingsButton()
+                            .onTapGesture {
+                                didTapSettingsCta()
+                            }
+                        Spacer()
+                    }
+                    .padding()
+                    .padding(.top, 16)
+                    Spacer()
+                }
                 Group {
                     if showSettings {
-                        SettingsScreen()
+                        SettingsScreen(tuningManager: tuningManager, handleDismiss: didTapCloseSettingsCta)
                     } else {
                         if let tuningPreset = tuningManager.tuningPreset {
                             PresetTuner(tuningPreset: tuningPreset)
@@ -62,23 +76,13 @@ private struct SheetContent: View {
                         }
                     }
                 }
+                Spacer()
             }
             .onChange(of: presentationDetent, { _, newValue in
                 withAnimation {
                     showSettings = newValue == PresentationDetent.large
                 }
             })
-            .toolbar {
-                if showSettings {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close settings", systemImage: "xmark", action: didTapCloseCta)
-                    }
-                } else {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Settings", systemImage: "gear", action: didTapSettingsCta)
-                    }
-                }
-            }
         }
     }
     
@@ -89,13 +93,41 @@ private struct SheetContent: View {
         }
     }
     
-    private func didTapCloseCta() {
+    private func didTapCloseSettingsCta() {
         withAnimation {
             showSettings = false
             presentationDetent = .fraction60
         }
     }
     
+}
+
+private struct TunerSettingsButton: View {
+    
+    @Environment(TuningManager.self) var tuningManager
+    
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(tuningManager.instrument.rawValue)
+                    Image(systemName: "chevron.right")
+                }
+                if let tuningPreset = tuningManager.tuningPreset {
+                    Text(tuningPreset.rawValue)
+                        .font(.system(size: 16))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+        }
+        .fixedSize()
+        .padding(.all, 8)
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray)
+        }
+    }
 }
 
 // MARK: - PresentationDetent + Utils
