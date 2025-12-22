@@ -50,19 +50,23 @@ private struct SheetContent: View {
     
     var body: some View {
         NavigationStack {
-            Group {
-                if showSettings {
-                    SettingsScreen()
-                } else {
-                    if let tuningPreset = tuningManager.tuningPreset {
-                        PresetTuner(tuningPreset: tuningPreset)
+            VStack {
+                Group {
+                    if showSettings {
+                        SettingsScreen()
                     } else {
-                        ChromaticTuner()
+                        if let tuningPreset = tuningManager.tuningPreset {
+                            PresetTuner(tuningPreset: tuningPreset)
+                        } else {
+                            ChromaticTuner()
+                        }
                     }
                 }
             }
             .onChange(of: presentationDetent, { _, newValue in
-                showSettings = newValue == PresentationDetent.large
+                withAnimation {
+                    showSettings = newValue == PresentationDetent.large
+                }
             })
             .toolbar {
                 if showSettings {

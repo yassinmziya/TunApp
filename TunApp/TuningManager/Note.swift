@@ -7,11 +7,15 @@
 
 import Foundation
 
+// MARK: - String + Utils
+
 extension String {
     
     static let sharpSymbol = "♯"
     static let flatSymbol = "♭"
 }
+
+// MARK: - Note
 
 /**
  Represents a note within the reference window
@@ -67,55 +71,5 @@ enum Note: CaseIterable {
     
     func frequency(for ocatave: Int) -> Float {
         return referenceFrequency * pow(2.0, Float(ocatave))
-    }
-}
-
-struct TuningNote: Identifiable, Equatable {
-    
-    let note: Note
-    let octave: Int
-    
-    var id: String {
-        return "\(note.name())\(octave)"
-    }
-}
-
-
-enum TuningPreset {
-    
-    case standard
-    case dropD
-    case openG
-    
-    var notes: [TuningNote] {
-        switch self {
-        case .standard:
-            return [
-                TuningNote(note: .e, octave: 2),
-                TuningNote(note: .a, octave: 2),
-                TuningNote(note: .d, octave: 3),
-                TuningNote(note: .g, octave: 3),
-                TuningNote(note: .b, octave: 3),
-                TuningNote(note: .e, octave: 4)
-            ]
-        case .dropD:
-            return [
-                TuningNote(note: .d, octave: 2),
-                TuningNote(note: .a, octave: 2),
-                TuningNote(note: .d, octave: 3),
-                TuningNote(note: .g, octave: 3),
-                TuningNote(note: .b, octave: 3),
-                TuningNote(note: .e, octave: 4)
-            ]
-        case .openG:
-            return [
-                TuningNote(note: .d, octave: 2),
-                TuningNote(note: .g, octave: 2),
-                TuningNote(note: .d, octave: 3),
-                TuningNote(note: .g, octave: 3),
-                TuningNote(note: .b, octave: 3),
-                TuningNote(note: .d, octave: 4)
-            ]
-        }
     }
 }
