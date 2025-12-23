@@ -129,7 +129,7 @@ fileprivate struct SheetHeader: View {
         .padding()
         .padding(.top, 16)
         .onChange(of: isAutoTuningModeEnabled) { _, newValue in
-            tuningManager.isAutoTuningModeEnabled = newValue
+            tuningManager.toggleAutoTuningMode(newValue)
         }
     }
 }

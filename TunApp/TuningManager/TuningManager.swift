@@ -30,9 +30,9 @@ class TuningManager: HasAudioEngine {
             #endif
         }
     }
-    var tuningNote: TuningNote?
+    var tuningNote: Pitch?
     private(set) var instrument: Instrument = .acousticGuitar
-    var isAutoTuningModeEnabled = true
+    private(set) var isAutoTuningModeEnabled = false
     
     
     // MARK: Private 
@@ -90,17 +90,25 @@ class TuningManager: HasAudioEngine {
             guard let self else {
                 return
             }
-            guard let processedPitch = self.signalProcessor.process(pitch, amplitude: amp) else {
+            guard let processedFrequency = self.signalProcessor.process(pitch, amplitude: amp) else {
                 self.tuningData = nil
                 return
             }
             var noteDetection: NoteDetector.NoteDetection?
-            if tuningPreset != nil {
-                if let tuningNote {
-                    noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch, tuningNote: tuningNote)
+            if let tuningPreset {
+                if isAutoTuningModeEnabled {
+                    noteDetection = noteDetector.detectNote(
+                        measuredFrequency: processedFrequency,
+                        tuningPreset: tuningPreset
+                    )
+                } else if let tuningNote {
+                    noteDetection = noteDetector.detectNote(
+                        measuredFrequency: processedFrequency,
+                        targetPitch: tuningNote)
                 }
             } else {
-                noteDetection = noteDetector.detectNote(measuredFrequency: processedPitch)
+                noteDetection = noteDetector.detectNote(
+                    measuredFrequency: processedFrequency)
             }
             self.tuningData = noteDetection?.tuningData(amplitude: amp)
         }
@@ -119,6 +127,11 @@ class TuningManager: HasAudioEngine {
         }
         self.tuningPreset = tuningPreset
     }
+    
+    func toggleAutoTuningMode(_ isEnabled: Bool) {
+        isAutoTuningModeEnabled = isEnabled
+        tuningNote = nil
+    }
 }
 
 // MARK: - NoteDetection + Utils
@@ -129,9 +142,9 @@ fileprivate extension NoteDetector.NoteDetection {
         return TuningData(
             pitch: adjustedFrequency,
             amplitude: amplitude,
-            ocatave: octave,
+            ocatave: pitch.octave,
             distance: deviation,
-            note: note
+            note: pitch.pitchClass
         )
     }
 }

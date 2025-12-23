@@ -1,5 +1,5 @@
 //
-//  Note.swift
+//  PitchClass.swift
 //  TunApp
 //
 //  Created by Yassin Mziya on 12/15/25.
@@ -18,10 +18,13 @@ extension String {
 // MARK: - Note
 
 /**
- Represents a note within the reference window
+ Use this for the general letter (A–G#) to match music theory terminology.
  */
-enum Note: CaseIterable {
+enum PitchClass: Int, CaseIterable {
     
+    case a = 0
+    case aSharp
+    case b
     case c
     case cSharp
     case d
@@ -31,9 +34,6 @@ enum Note: CaseIterable {
     case fSharp
     case g
     case gSharp
-    case a
-    case aSharp
-    case b
     
     func name(usingFlats: Bool = true) -> String {
         switch self {
@@ -52,24 +52,24 @@ enum Note: CaseIterable {
         }
     }
     
-    var referenceFrequency: Float {
-        switch self {
-        case .c: return 16.3516
-        case .cSharp: return 17.3239
-        case .d: return 18.3540
-        case .dSharp: return 19.4454
-        case .e: return 20.6017
-        case .f: return 21.8268
-        case .fSharp: return 23.1247
-        case .g: return 24.4997
-        case .gSharp: return 25.9565
-        case .a: return 27.5000
-        case .aSharp: return 29.1352
-        case .b: return 30.8677
-        }
-    }
-    
-    func frequency(for ocatave: Int) -> Float {
-        return referenceFrequency * pow(2.0, Float(ocatave))
-    }
+//    var referenceFrequency: Float {
+//        switch self {
+//        case .c: return 16.3516
+//        case .cSharp: return 17.3239
+//        case .d: return 18.3540
+//        case .dSharp: return 19.4454
+//        case .e: return 20.6017
+//        case .f: return 21.8268
+//        case .fSharp: return 23.1247
+//        case .g: return 24.4997
+//        case .gSharp: return 25.9565
+//        case .a: return 27.5000
+//        case .aSharp: return 29.1352
+//        case .b: return 30.8677
+//        }
+//    }
+//    
+//    func frequency(for ocatave: Int) -> Float {
+//        return referenceFrequency * pow(2.0, Float(ocatave))
+//    }
 }
