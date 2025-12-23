@@ -21,7 +21,7 @@ class TuningManager: HasAudioEngine {
     // MARK: Observable data
     
     private(set) var tuningData: TuningData?
-    var tuningPreset: TuningPreset? = .standard {
+    private(set) var tuningPreset: TuningPreset? = .standard {
         didSet {
             #if DEBUG
             if tuningPreset == nil {
@@ -32,6 +32,8 @@ class TuningManager: HasAudioEngine {
     }
     var tuningNote: TuningNote?
     private(set) var instrument: Instrument = .acousticGuitar
+    var isAutoTuningModeEnabled = true
+    
     
     // MARK: Private 
     

@@ -36,6 +36,8 @@ struct PresetTuner: View {
     }
 }
 
+// MARK: - HeadstockButton
+
 fileprivate struct HeadstockButton: View {
     
     let tuningNote: TuningNote
@@ -59,6 +61,10 @@ fileprivate struct HeadstockButton: View {
         .overlay {
             Circle()
                 .stroke(.white, lineWidth: 1)
+        }
+        .background {
+            Circle()
+                .fill(isActive ? Color.accentColor : .clear)
         }
     }
 }

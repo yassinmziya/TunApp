@@ -54,15 +54,10 @@ private struct SheetContent: View {
         NavigationStack {
             VStack {
                 if (!showSettings) {
-                    HStack {
-                        TunerSettingsButton()
-                            .onTapGesture {
-                                didTapSettingsCta()
-                            }
-                        Spacer()
-                    }
-                    .padding()
-                    .padding(.top, 16)
+                    SheetHeader(
+                        tuningManager: tuningManager,
+                        didTapSettingsCta: didTapSettingsCta
+                    )
                     Spacer()
                 }
                 Group {
@@ -102,7 +97,46 @@ private struct SheetContent: View {
     
 }
 
-private struct TunerSettingsButton: View {
+// MARK: - SheetHeader
+
+fileprivate struct SheetHeader: View {
+    
+    let tuningManager: TuningManager
+    let didTapSettingsCta: (() -> Void)?
+    @State var isAutoTuningModeEnabled: Bool
+    
+    init(
+        tuningManager: TuningManager,
+        didTapSettingsCta: (() -> Void)? = nil
+    ) {
+        self.tuningManager = tuningManager
+        self.isAutoTuningModeEnabled = tuningManager.isAutoTuningModeEnabled
+        self.didTapSettingsCta = didTapSettingsCta
+    }
+    
+    var body: some View {
+        HStack {
+            TunerSettingsButton()
+                .onTapGesture {
+                    didTapSettingsCta?()
+                }
+            Spacer()
+            VStack(spacing: 4) {
+                Toggle("Auto", isOn: $isAutoTuningModeEnabled)
+            }
+            .fixedSize()
+        }
+        .padding()
+        .padding(.top, 16)
+        .onChange(of: isAutoTuningModeEnabled) { _, newValue in
+            tuningManager.isAutoTuningModeEnabled = newValue
+        }
+    }
+}
+
+// MARK: - TunerSettingsButton
+
+fileprivate struct TunerSettingsButton: View {
     
     @Environment(TuningManager.self) var tuningManager
     
