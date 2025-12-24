@@ -22,10 +22,7 @@ extension String {
  */
 enum PitchClass: Int, CaseIterable {
     
-    case a = 0
-    case aSharp
-    case b
-    case c
+    case c = 0
     case cSharp
     case d
     case dSharp
@@ -34,6 +31,9 @@ enum PitchClass: Int, CaseIterable {
     case fSharp
     case g
     case gSharp
+    case a
+    case aSharp
+    case b
     
     func name(usingFlats: Bool = true) -> String {
         switch self {

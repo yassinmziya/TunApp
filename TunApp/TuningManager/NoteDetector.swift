@@ -9,57 +9,56 @@ import Foundation
 
 class NoteDetector {
     
-    private let deadzoneThreshold: Float = 5.0  // cents
+    private let octave0LowerBound = Pitch(pitchClass: .c, octave: 0)
+    private let octave0UpperBound = Pitch(pitchClass: .c, octave: 0)
+    
+    
+    private let octaveZeroChromaticScale = [
+        Pitch(pitchClass: .c, octave: 0), // ~16.35 Hz
+        Pitch(pitchClass: .cSharp, octave: 0), // ~17.32 Hz
+        Pitch(pitchClass: .d, octave: 0), // ~18.35 Hz
+        Pitch(pitchClass: .dSharp, octave: 0), // ~19.45 Hz
+        Pitch(pitchClass: .e, octave: 0), // ~20.60 Hz
+        Pitch(pitchClass: .f, octave: 0), // ~21.83 Hz
+        Pitch(pitchClass: .fSharp, octave: 0), // ~23.12 Hz
+        Pitch(pitchClass: .g, octave: 0), // ~24.50 Hz
+        Pitch(pitchClass: .gSharp, octave: 0), // ~25.96 Hz
+        Pitch(pitchClass: .a, octave: 0), // ~27.50 Hz
+        Pitch(pitchClass: .aSharp, octave: 0), // ~29.14 Hz
+        Pitch(pitchClass: .b, octave: 0), // ~30.87 Hz
+    ]
     
     struct NoteDetection {
         let pitch: Pitch
-        let adjustedFrequency: Float
+        let frequency: Float
         let deviation: Float
     }
     
     func detectNote(measuredFrequency: Float) -> NoteDetection? {
-        let adjustedMeasuredFrequency = adjustToReferenceOctaveRange(measuredFrequency)
-        
-        var minDistance: Float = .greatestFiniteMagnitude
-        var detectedPitchClass: PitchClass?
-        for possiblePitch in Pitch.referenceRange {
-            let distance = fabsf(possiblePitch.frequency() - adjustedMeasuredFrequency)
-            if distance < minDistance {
-                detectedPitchClass = possiblePitch.pitchClass
-                minDistance = distance
-            }
-        }
-        guard let detectedPitchClass else {
+        let normalizedFrequency = mapToBaseOctave(measuredFrequency)
+        guard let detectedPitchClass = closestPitch(to: normalizedFrequency, in: octaveZeroChromaticScale)?.pitchClass else {
             return nil
         }
         
-        let octave = Int(log2f(measuredFrequency / adjustedMeasuredFrequency))
+        let octave = Int(log2f(measuredFrequency / octave0LowerBound.frequency()))
         let detectedPitch = Pitch(pitchClass: detectedPitchClass, octave: octave)
-        
-        var deviation = 1200 * log2f(adjustedMeasuredFrequency/detectedPitch.frequency()) // in cents
-        if abs(deviation) < deadzoneThreshold {
-            deviation = 0.0
-        }
+        let deviation = calculateDeviation(from: measuredFrequency, to: detectedPitch)
         
         return NoteDetection(
             pitch: detectedPitch,
-            adjustedFrequency: adjustedMeasuredFrequency,
+            frequency: normalizedFrequency,
             deviation: deviation
         )
     }
     
     func detectNote(
         measuredFrequency: Float,
-        targetPitch: Pitch
+        selectedPitch: Pitch
     ) -> NoteDetection {
-        let targetFrequency = targetPitch.frequency()
-        var deviation = 1200 * log2f(measuredFrequency/targetFrequency) // in cents
-        if abs(deviation) < deadzoneThreshold {
-            deviation = 0.0
-        }
+        let deviation = calculateDeviation(from: measuredFrequency, to: selectedPitch)
         return NoteDetection(
-            pitch: targetPitch,
-            adjustedFrequency: measuredFrequency,
+            pitch: selectedPitch,
+            frequency: measuredFrequency,
             deviation: deviation)
     }
     
@@ -67,50 +66,46 @@ class NoteDetector {
         measuredFrequency: Float,
         tuningPreset: TuningPreset,
     ) -> NoteDetection? {
-        var minDistance: Float = .greatestFiniteMagnitude
-        var detectedPitch: Pitch?
-        for possiblePitch in tuningPreset.pitches {
-            let distance = fabsf(possiblePitch.frequency() - measuredFrequency)
-            if distance < minDistance {
-                detectedPitch = possiblePitch
-                minDistance = distance
-            }
-        }
-        
-        guard let detectedPitch else {
+        guard let detectedPitch = closestPitch(to: measuredFrequency, in: tuningPreset.pitches) else {
             return nil
         }
-        
-        var deviation = 1200 * log2f(measuredFrequency/detectedPitch.frequency()) // in cents
-        if abs(deviation) < deadzoneThreshold {
-            deviation = 0.0
-        }
-        
+        let deviation = calculateDeviation(from: measuredFrequency, to: detectedPitch)
         return NoteDetection(
             pitch: detectedPitch,
-            adjustedFrequency: measuredFrequency,
+            frequency: measuredFrequency,
             deviation: deviation
         )
     }
     
-    /**
-     Maps the given pitch value to hardcoded octave represented by `Pitch.referenceRange` array
-     
-     Discussion:
-     An octave is a fundamental musical interval defined by a frequency ratio of 2:1.
-     Higher Octave: Doubling the frequency (f * 2) raises the pitch by exactly one octave.
-     Lower Octave: Halving the frequency (f / 2 or f * 0.5) lowers the pitch by exactly one octave.
-    
-     For example, the musical note A4 (the A above middle C) has a standard frequency of 440 Hz. The note A3, which is one octave lower, has a frequency of 220 Hz.
-     */
-    private func adjustToReferenceOctaveRange(_ frequency: Float) -> Float {
+    private func mapToBaseOctave(_ frequency: Float) -> Float {
         var frequency = frequency
-        while frequency > Float(Pitch.referenceRange.last!.frequency()) {
+        while frequency > Float(octave0LowerBound.frequency()) {
             frequency /= 2.0
         }
-        while frequency < Float(Pitch.referenceRange.first!.frequency()) {
+        while frequency < Float(octave0UpperBound.frequency()) {
             frequency *= 2.0
         }
         return frequency
+    }
+    
+    private func calculateDeviation(from frequency: Float, to pitch: Pitch, deadzone: Float = 5.0) -> Float {
+        var deviation = 1200 * log2f(frequency/pitch.frequency()) // in cents
+        if abs(deviation) < deadzone {
+            deviation = 0.0
+        }
+        return deviation
+    }
+    
+    private func closestPitch(to frequency: Float, in possiblePitches: [Pitch]) -> Pitch? {
+        var minDistance: Float = .greatestFiniteMagnitude
+        var detectedPitch: Pitch?
+        for pitch in possiblePitches {
+            let distance = fabsf(pitch.frequency() - frequency)
+            if distance < minDistance {
+                detectedPitch = pitch
+                minDistance = distance
+            }
+        }
+        return detectedPitch
     }
 }

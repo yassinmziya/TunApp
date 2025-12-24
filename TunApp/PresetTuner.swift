@@ -23,9 +23,9 @@ struct PresetTuner: View {
                 let pitch = tuningPreset.pitches[index]
                 HeadstockButton(
                     pitch: pitch,
-                    isActive: pitch == tuningManager.tuningNote
+                    isActive: pitch == tuningManager.selectedPitch
                 ) {
-                    tuningManager.tuningNote = pitch
+                    tuningManager.selectedPitch = pitch
                 }
                 if index < tuningPreset.pitches.count - 1 {
                     Spacer()

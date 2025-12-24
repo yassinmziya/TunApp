@@ -17,12 +17,10 @@ enum Instrument: String, CaseIterable, Identifiable {
     
     var tuningPresets: [TuningPreset] {
         switch self {
-        case .chromatic :
+        case .chromatic:
             return []
         case .acousticGuitar, .electricGuitar:
             return [.standard, .dropD, .openG]
-        default:
-            return []
         }
     }
 }
