@@ -55,7 +55,7 @@ private struct SheetContent: View {
             VStack {
                 if (!showSettings) {
                     SheetHeader(
-                        tuningManager: tuningManager,
+                        isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled,
                         didTapSettingsCta: didTapSettingsCta
                     )
                     Spacer()
@@ -101,18 +101,10 @@ private struct SheetContent: View {
 
 fileprivate struct SheetHeader: View {
     
-    let tuningManager: TuningManager
-    let didTapSettingsCta: (() -> Void)?
-    @State var isAutoTuningModeEnabled: Bool
+    @Environment(TuningManager.self) var tuningManager
     
-    init(
-        tuningManager: TuningManager,
-        didTapSettingsCta: (() -> Void)? = nil
-    ) {
-        self.tuningManager = tuningManager
-        self.isAutoTuningModeEnabled = tuningManager.isAutoTuningModeEnabled
-        self.didTapSettingsCta = didTapSettingsCta
-    }
+    @State var isAutoDetectionEnabled: Bool
+    let didTapSettingsCta: (() -> Void)?
     
     var body: some View {
         HStack {
@@ -122,14 +114,14 @@ fileprivate struct SheetHeader: View {
                 }
             Spacer()
             VStack(spacing: 4) {
-                Toggle("Auto", isOn: $isAutoTuningModeEnabled)
+                Toggle("Auto", isOn: $isAutoDetectionEnabled)
             }
             .fixedSize()
         }
         .padding()
         .padding(.top, 16)
-        .onChange(of: isAutoTuningModeEnabled) { _, newValue in
-            tuningManager.toggleAutoTuningMode(newValue)
+        .onChange(of: isAutoDetectionEnabled) { _, newValue in
+            tuningManager.toggleAutoDetection(newValue)
         }
     }
 }

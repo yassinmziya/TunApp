@@ -35,7 +35,7 @@ class TuningManager: HasAudioEngine {
     }
     var selectedPitch: Pitch?
     private(set) var instrument: Instrument = .acousticGuitar
-    private(set) var isAutoTuningModeEnabled = false
+    private(set) var isAutoDetectionEnabled = false
     
     // MARK: Private 
     
@@ -62,6 +62,10 @@ class TuningManager: HasAudioEngine {
         self.tracker = PitchTap(mic) { [weak self] pitch, amp in
             self?.update(pitch[0], amp[0])
         }
+        
+        // initial settings
+        updateInstrument(.acousticGuitar)
+        toggleAutoDetection(true)
     }
     
     func resume() {
@@ -98,11 +102,12 @@ class TuningManager: HasAudioEngine {
             }
             var noteDetection: NoteDetector.NoteDetection?
             if let tuningPreset {
-                if isAutoTuningModeEnabled {
+                if isAutoDetectionEnabled {
                     noteDetection = noteDetector.detectNote(
                         measuredFrequency: processedFrequency,
                         tuningPreset: tuningPreset
                     )
+                    selectedPitch = noteDetection?.pitch
                 } else if let selectedPitch {
                     noteDetection = noteDetector.detectNote(
                         measuredFrequency: processedFrequency,
@@ -118,7 +123,7 @@ class TuningManager: HasAudioEngine {
     
     func enableChromaticTuning() {
         self.instrument = .chromatic
-        self.isAutoTuningModeEnabled = false
+        self.isAutoDetectionEnabled = false
         self.selectedPitch = nil
         self.tuningPreset = nil
     }
@@ -131,7 +136,7 @@ class TuningManager: HasAudioEngine {
             return
         }
         self.instrument = instrument
-        self.isAutoTuningModeEnabled = false
+        self.isAutoDetectionEnabled = false
         updatePreset(defaultPreset)
     }
     
@@ -140,8 +145,8 @@ class TuningManager: HasAudioEngine {
         self.selectedPitch = tuningPreset.pitches.first
     }
     
-    func toggleAutoTuningMode(_ isEnabled: Bool) {
-        isAutoTuningModeEnabled = isEnabled
+    func toggleAutoDetection(_ isEnabled: Bool) {
+        isAutoDetectionEnabled = isEnabled
         selectedPitch = nil
     }
 }
