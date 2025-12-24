@@ -79,7 +79,7 @@ private struct SheetContent: View {
                 Spacer()
             }
             .onChange(of: presentationDetent, { _, newValue in
-                withAnimation {
+                withAnimation(.easeInOut(duration: 0.1)) {
                     showSettings = newValue == PresentationDetent.large
                 }
             })
@@ -111,12 +111,16 @@ private struct TunerSettingsButton: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(tuningManager.instrument.rawValue)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.accent)
                     Image(systemName: "chevron.right")
+                        .renderingMode(.template)
+                        .foregroundStyle(.accent)
                 }
                 if let tuningPreset = tuningManager.tuningPreset {
                     Text(tuningPreset.rawValue)
                         .font(.system(size: 16))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.accent)
                 }
             }
             Spacer()
@@ -124,8 +128,8 @@ private struct TunerSettingsButton: View {
         .fixedSize()
         .padding(.all, 8)
         .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.accent)
         }
     }
 }

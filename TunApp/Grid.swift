@@ -115,7 +115,7 @@ private struct TickerLayer: View {
                             size: CGSize(
                                 width: TICK_WIDTH, height: TICK_HEIGHT)
                         ))
-                        context.fill(path, with: .color(.red))
+                        context.fill(path, with: .color(.failure))
                     }
                 }
             }
@@ -151,10 +151,10 @@ private struct NeedleLayer: View {
     
     var strokeColor: Color {
         guard let tuningData else {
-            return .white
+            return .accent
         }
         
-        return tuningData.distance < 0.02 ? .green : .red
+        return tuningData.distance < 0.02 ? .success : .failure
     }
     
     var needleText: String {

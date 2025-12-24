@@ -60,7 +60,7 @@ struct SettingsScreen: View {
                         
                         Divider()
                             .frame(height: OUTLINE_WIDTH)
-                            .overlay(isSelected ? .blue : .gray)
+                            .overlay(isSelected ? .success : .gray)
                     }
                 }
                 Spacer()
@@ -113,35 +113,17 @@ fileprivate struct InstrumentCard: View {
             }
             .frame(width: 140, height: 80)
             .overlay {
-                if (isSelected) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .inset(by: OUTLINE_WIDTH/2.0)
-                        .stroke(style: .init(lineWidth: OUTLINE_WIDTH))
-                    
-                }
+                RoundedRectangle(cornerRadius: 12)
+                    .inset(by: OUTLINE_WIDTH/2.0)
+                    .stroke(isSelected ? .accent : .black)
             }
             .background {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isSelected
-                        ? Color.white.opacity(0.5)
-                        : Color.white.opacity(0.1)
+                        ? .accent
+                        : .clear
                     )
-            }
-            
-            if isSelected {
-                VStack(alignment: .center) {
-                    Image(systemName: "checkmark")
-                        .resizable()
-                        .renderingMode(.template)
-                        .scaledToFit()
-                        .frame(width: 16, height: 12)
-                        .foregroundStyle(.black.opacity(0.5))
-                        .padding(.all, 8)
-                        .background {
-                            UnevenRoundedRectangle(topLeadingRadius: 12, bottomTrailingRadius: 12)
-                        }
-                }
             }
         }
     }
@@ -164,7 +146,7 @@ fileprivate struct TuningPresetRow: View {
                             .padding(.all, 4)
                             .background {
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.gray)
+                                    .fill(.gray)
                             }
                     }
                 }
@@ -176,9 +158,10 @@ fileprivate struct TuningPresetRow: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 24, height: 24)
-                    .foregroundColor(isSelected ? .blue : .gray)
+                    .foregroundColor(isSelected ? .success : .gray)
             }
         }
+        .contentShape(RoundedRectangle(cornerRadius: 12.0))
     }
     
     private func noteName(tuningNote: TuningNote) -> String {
