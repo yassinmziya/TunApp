@@ -10,5 +10,5 @@ struct TuningData: Equatable {
     let amplitude: Float
     let ocatave: Int
     let distance: Float
-    let note: Note
+    let note: PitchClass
 }

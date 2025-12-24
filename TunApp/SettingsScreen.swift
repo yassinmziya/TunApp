@@ -9,6 +9,8 @@ import SwiftUI
 
 fileprivate let OUTLINE_WIDTH: CGFloat = 1
 
+// MARK: - SettingsScreen
+
 struct SettingsScreen: View {
     
     private let tuningManager: TuningManager
@@ -82,19 +84,14 @@ struct SettingsScreen: View {
     private func didSelectInstrument(instrument: Instrument) {
         selectedInstrument = instrument
         if case .chromatic = instrument {
-            tuningManager.setTuningPreset(instrument: instrument)
+            tuningManager.enableChromaticTuning()
             return
         }
-        tuningManager.setTuningPreset(
-            instrument: instrument,
-            tuningPreset: instrument.tuningPresets.first
-        )
+        tuningManager.updateInstrument(instrument)
     }
     
     private func didSelectTuningPreset(tuningPreset: TuningPreset) {
-        tuningManager.setTuningPreset(
-            instrument: selectedInstrument,
-            tuningPreset: tuningPreset)
+        tuningManager.updatePreset(tuningPreset)
     }
 }
 
@@ -129,6 +126,8 @@ fileprivate struct InstrumentCard: View {
     }
 }
 
+// MARK: - TuningPresetRow
+
 fileprivate struct TuningPresetRow: View {
     
     let tuningPreset: TuningPreset
@@ -140,8 +139,8 @@ fileprivate struct TuningPresetRow: View {
                 Text(tuningPreset.rawValue)
                     .font(.system(size: 16))
                 HStack {
-                    ForEach(TuningPreset.standard.notes) { tuningNote in
-                        Text(noteName(tuningNote: tuningNote))
+                    ForEach(TuningPreset.standard.pitches) { pitch in
+                        Text(noteName(tuningNote: pitch))
                             .font(.system(size: 12))
                             .padding(.all, 4)
                             .background {
@@ -164,8 +163,8 @@ fileprivate struct TuningPresetRow: View {
         .contentShape(RoundedRectangle(cornerRadius: 12.0))
     }
     
-    private func noteName(tuningNote: TuningNote) -> String {
-        return "\(tuningNote.note.name())\(tuningNote.octave)"
+    private func noteName(tuningNote: Pitch) -> String {
+        return "\(tuningNote.pitchClass.name())\(tuningNote.octave)"
     }
 }
 

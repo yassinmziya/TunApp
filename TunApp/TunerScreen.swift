@@ -54,15 +54,10 @@ private struct SheetContent: View {
         NavigationStack {
             VStack {
                 if (!showSettings) {
-                    HStack {
-                        TunerSettingsButton()
-                            .onTapGesture {
-                                didTapSettingsCta()
-                            }
-                        Spacer()
-                    }
-                    .padding()
-                    .padding(.top, 16)
+                    SheetHeader(
+                        isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled,
+                        didTapSettingsCta: didTapSettingsCta
+                    )
                     Spacer()
                 }
                 Group {
@@ -102,7 +97,38 @@ private struct SheetContent: View {
     
 }
 
-private struct TunerSettingsButton: View {
+// MARK: - SheetHeader
+
+fileprivate struct SheetHeader: View {
+    
+    @Environment(TuningManager.self) var tuningManager
+    
+    @State var isAutoDetectionEnabled: Bool
+    let didTapSettingsCta: (() -> Void)?
+    
+    var body: some View {
+        HStack {
+            TunerSettingsButton()
+                .onTapGesture {
+                    didTapSettingsCta?()
+                }
+            Spacer()
+            VStack(spacing: 4) {
+                Toggle("Auto", isOn: $isAutoDetectionEnabled)
+            }
+            .fixedSize()
+        }
+        .padding()
+        .padding(.top, 16)
+        .onChange(of: isAutoDetectionEnabled) { _, newValue in
+            tuningManager.toggleAutoDetection(newValue)
+        }
+    }
+}
+
+// MARK: - TunerSettingsButton
+
+fileprivate struct TunerSettingsButton: View {
     
     @Environment(TuningManager.self) var tuningManager
     

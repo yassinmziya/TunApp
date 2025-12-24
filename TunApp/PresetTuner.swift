@@ -19,15 +19,15 @@ struct PresetTuner: View {
     
     var body: some View {
         HStack {
-            ForEach(tuningPreset.notes.indices, id: \.self) { index in
-                let tuningNote = tuningPreset.notes[index]
+            ForEach(tuningPreset.pitches.indices, id: \.self) { index in
+                let pitch = tuningPreset.pitches[index]
                 HeadstockButton(
-                    tuningNote: tuningNote,
-                    isActive: tuningNote == tuningManager.tuningNote
+                    pitch: pitch,
+                    isActive: pitch == tuningManager.selectedPitch
                 ) {
-                    tuningManager.tuningNote = tuningNote
+                    tuningManager.selectedPitch = pitch
                 }
-                if index < tuningPreset.notes.count - 1 {
+                if index < tuningPreset.pitches.count - 1 {
                     Spacer()
                 }
             }
@@ -36,9 +36,11 @@ struct PresetTuner: View {
     }
 }
 
+// MARK: - HeadstockButton
+
 fileprivate struct HeadstockButton: View {
     
-    let tuningNote: TuningNote
+    let pitch: Pitch
     let isActive: Bool
     let action: () -> Void
     
@@ -47,9 +49,9 @@ fileprivate struct HeadstockButton: View {
     var body: some View {
         Button(action: action) {
             Group {
-                Text(tuningNote.note.name())
+                Text(pitch.pitchClass.name())
                     .font(.system(size: 24))
-                + Text("\(tuningNote.octave)")
+                + Text("\(pitch.octave)")
                     .font(.system(size: 16))
             }
             .frame(width: RADIUS, height: RADIUS)
@@ -59,6 +61,10 @@ fileprivate struct HeadstockButton: View {
         .overlay {
             Circle()
                 .stroke(.white, lineWidth: 1)
+        }
+        .background {
+            Circle()
+                .fill(isActive ? Color.accentColor : .clear)
         }
     }
 }
