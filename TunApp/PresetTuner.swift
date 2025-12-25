@@ -12,27 +12,59 @@ struct PresetTuner: View {
     @Environment(TuningManager.self) var tuningManager
     
     let tuningPreset: TuningPreset
+    @State private var isAutoDetectionEnabled: Bool
     
-    init(tuningPreset: TuningPreset) {
+    private var pitchText: String {
+        if let pitch = tuningManager.tuningData?.pitch {
+            return "\(Int(pitch)) Hz"
+        }
+        return ""
+    }
+    
+    init(tuningPreset: TuningPreset, isAutoDetectionEnabled: Bool) {
         self.tuningPreset = tuningPreset
+        self.isAutoDetectionEnabled = isAutoDetectionEnabled
     }
     
     var body: some View {
-        HStack {
-            ForEach(tuningPreset.pitches.indices, id: \.self) { index in
-                let pitch = tuningPreset.pitches[index]
-                HeadstockButton(
-                    pitch: pitch,
-                    isActive: pitch == tuningManager.selectedPitch
-                ) {
-                    tuningManager.selectedPitch = pitch
+        VStack(spacing: 24) {
+            Spacer()
+            
+            HStack {
+                ForEach(tuningPreset.pitches.indices, id: \.self) { index in
+                    let pitch = tuningPreset.pitches[index]
+                    HeadstockButton(
+                        pitch: pitch,
+                        isActive: pitch == tuningManager.selectedPitch
+                    ) {
+                        tuningManager.updateSelectedPitch(pitch)
+                    }
+                    if index < tuningPreset.pitches.count - 1 {
+                        Spacer()
+                    }
                 }
-                if index < tuningPreset.pitches.count - 1 {
-                    Spacer()
+            }
+            .padding(.horizontal)
+            
+            Text(pitchText)
+                .font(.system(size: 24))
+                .foregroundStyle(.chromeJack)
+            
+            Spacer()
+            
+            HStack {
+                Spacer()
+                Toggle(isOn: $isAutoDetectionEnabled) {
+                    Text("Auto")
+                }
+                .fixedSize()
+                .padding()
+                .tint(.accent)
+                .onChange(of: isAutoDetectionEnabled) { _, newValue in
+                    tuningManager.toggleAutoDetection(newValue)
                 }
             }
         }
-        .padding(.horizontal)
     }
 }
 
@@ -56,11 +88,11 @@ fileprivate struct HeadstockButton: View {
             }
             .frame(width: RADIUS, height: RADIUS)
         }
-        .clipShape(Circle())
-        .tint(.primary)
+        .tint(.text)
+        .glassEffect(.regular.interactive())
         .overlay {
             Circle()
-                .stroke(.white, lineWidth: 1)
+                .stroke(.white.opacity(0.4), lineWidth: 1)
         }
         .background {
             Circle()
@@ -70,6 +102,6 @@ fileprivate struct HeadstockButton: View {
 }
 
 #Preview {
-    PresetTuner(tuningPreset: .standard)
+    PresetTuner(tuningPreset: .standard, isAutoDetectionEnabled: true)
         .environment(TuningManager())
 }

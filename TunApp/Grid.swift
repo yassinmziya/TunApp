@@ -186,7 +186,7 @@ private struct NeedleLayer: View {
                             Circle()
                                 .stroke(strokeColor, lineWidth: 4)
                         }
-                        .background(.background)
+                        .background(Circle().fill(.background))
                         .offset(x: xValue)
                         .animation(.spring, value: xValue)
                         .contentTransition(.identity)

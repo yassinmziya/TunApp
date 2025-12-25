@@ -118,7 +118,7 @@ fileprivate struct InstrumentCard: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isSelected
-                        ? .accent
+                        ? .cardOrange
                         : .clear
                     )
             }

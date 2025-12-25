@@ -34,25 +34,33 @@ struct ChromaticTuner: View {
     var body: some View {
         VStack {
             Spacer()
-            Text(noteName)
-                .font(.system(size: 96))
-            + Text("\(octave)")
-                .font(.system(size: 48))
+            Group {
+                Text(noteName)
+                    .font(.system(size: 104))
+                + Text("\(octave)")
+                    .font(.system(size: 56))
+            }
+            .foregroundStyle(.accent)
             
-            Text("Frequency: \(Int(tuningData?.pitch ?? 0)) Hz")
-                .font(.system(size: 24))
-            Text("Distance: \(tuningData?.distance ?? 0)")
-                .font(.system(size: 16))
-            Text("Amplitude: \(tuningData?.amplitude ?? 0)")
-                .font(.system(size: 16))
+            if let pitch = tuningData?.pitch {
+                Text("\(Int(pitch)) Hz")
+                    .font(.system(size: 24))
+                    .foregroundStyle(.chromeJack)
+            }
+//            Text("Distance: \(tuningData?.distance ?? 0)")
+//                .font(.system(size: 16))
+//            Text("Amplitude: \(tuningData?.amplitude ?? 0)")
+//                .font(.system(size: 16))
             Spacer()
             HStack {
                 Spacer()
                 Toggle(isOn: $usingFlats) {
-                    Text("\(String.sharpSymbol)/\(String.flatSymbol)")
+                    Text("\(usingFlats ? String.flatSymbol : String.sharpSymbol)")
                 }
+                .fixedSize()
+                .padding()
+                .tint(.accent)
             }
-            .padding()
         }
     }
 }

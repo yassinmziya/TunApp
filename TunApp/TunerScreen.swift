@@ -54,10 +54,7 @@ private struct SheetContent: View {
         NavigationStack {
             VStack {
                 if (!showSettings) {
-                    SheetHeader(
-                        isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled,
-                        didTapSettingsCta: didTapSettingsCta
-                    )
+                    SheetHeader(didTapSettingsCta: didTapSettingsCta)
                     Spacer()
                 }
                 Group {
@@ -65,7 +62,7 @@ private struct SheetContent: View {
                         SettingsScreen(tuningManager: tuningManager, handleDismiss: didTapCloseSettingsCta)
                     } else {
                         if let tuningPreset = tuningManager.tuningPreset {
-                            PresetTuner(tuningPreset: tuningPreset)
+                            PresetTuner(tuningPreset: tuningPreset, isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled)
                         } else {
                             ChromaticTuner()
                         }
@@ -102,27 +99,28 @@ private struct SheetContent: View {
 fileprivate struct SheetHeader: View {
     
     @Environment(TuningManager.self) var tuningManager
-    
-    @State var isAutoDetectionEnabled: Bool
+
     let didTapSettingsCta: (() -> Void)?
     
     var body: some View {
+        let subheading = tuningManager.tuningPreset?.rawValue ?? "All 12 Semi-tones"
         HStack {
-            TunerSettingsButton()
-                .onTapGesture {
-                    didTapSettingsCta?()
-                }
-            Spacer()
-            VStack(spacing: 4) {
-                Toggle("Auto", isOn: $isAutoDetectionEnabled)
+            VStack(alignment: .leading) {
+                Text(tuningManager.instrument.rawValue)
+                    .font(.title.bold())
+                Text(subheading)
+                    .font(.title.bold())
+                    .foregroundStyle(.accent)
             }
-            .fixedSize()
+            
+            Spacer()
+            
+            IconButton(iconImage: Image(systemName: "gearshape.fill"), style: .primary) {
+                didTapSettingsCta?()
+            }
         }
         .padding()
-        .padding(.top, 16)
-        .onChange(of: isAutoDetectionEnabled) { _, newValue in
-            tuningManager.toggleAutoDetection(newValue)
-        }
+        .padding(.top, 12)
     }
 }
 

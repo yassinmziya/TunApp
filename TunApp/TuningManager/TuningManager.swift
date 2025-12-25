@@ -33,7 +33,7 @@ class TuningManager: HasAudioEngine {
             #endif
         }
     }
-    var selectedPitch: Pitch?
+    private(set) var selectedPitch: Pitch?
     private(set) var instrument: Instrument = .acousticGuitar
     private(set) var isAutoDetectionEnabled = false
     
@@ -143,6 +143,11 @@ class TuningManager: HasAudioEngine {
     func updatePreset(_ tuningPreset: TuningPreset) {
         self.tuningPreset = tuningPreset
         self.selectedPitch = tuningPreset.pitches.first
+    }
+    
+    func updateSelectedPitch(_ selectedPitch: Pitch) {
+        self.selectedPitch = selectedPitch
+        self.isAutoDetectionEnabled = false
     }
     
     func toggleAutoDetection(_ isEnabled: Bool) {
