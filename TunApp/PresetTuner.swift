@@ -18,7 +18,7 @@ struct PresetTuner: View {
         if let pitch = tuningManager.tuningData?.pitch {
             return "\(Int(pitch)) Hz"
         }
-        return ""
+        return "0"
     }
     
     init(tuningPreset: TuningPreset, isAutoDetectionEnabled: Bool) {
@@ -49,6 +49,7 @@ struct PresetTuner: View {
             Text(pitchText)
                 .font(.system(size: 24))
                 .foregroundStyle(.chromeJack)
+                .opacity(tuningManager.tuningData == nil ? 0 : 1)
             
             Spacer()
             

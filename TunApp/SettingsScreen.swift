@@ -29,7 +29,7 @@ struct SettingsScreen: View {
     
     var body: some View {
         ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .center, spacing: 24) {
                 HStack {
                     Text("Settings")
                         .font(.largeTitle.bold())
@@ -69,10 +69,29 @@ struct SettingsScreen: View {
                                     tuningPreset: tuningPreset,
                                     isSelected: isSelected)
                                 .onTapGesture {
-                                    didSelectTuningPreset(tuningPreset: tuningPreset)
+                                    withAnimation(.linear(duration: 0.05)) {
+                                        didSelectTuningPreset(tuningPreset: tuningPreset)
+                                    }
                                 }
                             }
                         }
+                    } else if case .chromatic = selectedInstrument {
+                        VStack(spacing: 16) {
+                            Image(systemName: "tuningfork")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 80, height: 80)
+                                .foregroundStyle(.chromeJack)
+                            Text("FULL CHROMATIC RANGE")
+                                .font(.headline.weight(.heavy).italic())
+                                .foregroundStyle(.accent)
+                            Text("Tuning is automatic. The application will detect the nearest semitone and guide you to the target frequency.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.textMeta)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(width: 256)
+                        .padding(.top, 48)
                     }
                 }
                 Spacer()
@@ -163,13 +182,20 @@ fileprivate struct TuningPresetRow: View {
             
             Spacer()
             
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(.accent)
+            ZStack {
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.accent)
+                }
+            }
+            .frame(width: 24, height: 24)
+            .overlay {
+                Circle()
+                    .stroke(.border)
             }
         }
         .padding()
@@ -201,8 +227,8 @@ fileprivate struct SettingsSectionHeader: View {
     let title: String
     
     var body: some View {
-        Text(title)
-            .font(.subheadline.bold())
+        Text(title.uppercased())
+            .font(.subheadline.weight(.heavy).italic())
             .foregroundStyle(.chromeJack)
     }
 }
@@ -215,7 +241,7 @@ fileprivate struct SettingsSection<Content>: View where Content: View {
     let content: () -> Content
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 16) {
             SettingsSectionHeader(title: title)
             content()
         }
