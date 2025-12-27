@@ -54,10 +54,7 @@ private struct SheetContent: View {
         NavigationStack {
             VStack {
                 if (!showSettings) {
-                    SheetHeader(
-                        isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled,
-                        didTapSettingsCta: didTapSettingsCta
-                    )
+                    SheetHeader(didTapSettingsCta: didTapSettingsCta)
                     Spacer()
                 }
                 Group {
@@ -65,7 +62,7 @@ private struct SheetContent: View {
                         SettingsScreen(tuningManager: tuningManager, handleDismiss: didTapCloseSettingsCta)
                     } else {
                         if let tuningPreset = tuningManager.tuningPreset {
-                            PresetTuner(tuningPreset: tuningPreset)
+                            PresetTuner(tuningPreset: tuningPreset, isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled)
                         } else {
                             ChromaticTuner()
                         }
@@ -74,7 +71,7 @@ private struct SheetContent: View {
                 Spacer()
             }
             .onChange(of: presentationDetent, { _, newValue in
-                withAnimation {
+                withAnimation(.easeInOut(duration: 0.1)) {
                     showSettings = newValue == PresentationDetent.large
                 }
             })
@@ -102,27 +99,28 @@ private struct SheetContent: View {
 fileprivate struct SheetHeader: View {
     
     @Environment(TuningManager.self) var tuningManager
-    
-    @State var isAutoDetectionEnabled: Bool
+
     let didTapSettingsCta: (() -> Void)?
     
     var body: some View {
+        let subheading = tuningManager.tuningPreset?.rawValue ?? "All 12 Semi-tones"
         HStack {
-            TunerSettingsButton()
-                .onTapGesture {
-                    didTapSettingsCta?()
-                }
-            Spacer()
-            VStack(spacing: 4) {
-                Toggle("Auto", isOn: $isAutoDetectionEnabled)
+            VStack(alignment: .leading) {
+                Text(tuningManager.instrument.rawValue)
+                    .font(.title.bold())
+                Text(subheading)
+                    .font(.title.bold())
+                    .foregroundStyle(.accent)
             }
-            .fixedSize()
+            
+            Spacer()
+            
+            IconButton(iconImage: Image(systemName: "gearshape.fill"), style: .primary) {
+                didTapSettingsCta?()
+            }
         }
         .padding()
-        .padding(.top, 16)
-        .onChange(of: isAutoDetectionEnabled) { _, newValue in
-            tuningManager.toggleAutoDetection(newValue)
-        }
+        .padding(.top, 12)
     }
 }
 
@@ -137,12 +135,16 @@ fileprivate struct TunerSettingsButton: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(tuningManager.instrument.rawValue)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.accent)
                     Image(systemName: "chevron.right")
+                        .renderingMode(.template)
+                        .foregroundStyle(.accent)
                 }
                 if let tuningPreset = tuningManager.tuningPreset {
                     Text(tuningPreset.rawValue)
                         .font(.system(size: 16))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.accent)
                 }
             }
             Spacer()
@@ -150,8 +152,8 @@ fileprivate struct TunerSettingsButton: View {
         .fixedSize()
         .padding(.all, 8)
         .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.accent)
         }
     }
 }

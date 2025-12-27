@@ -29,40 +29,69 @@ struct SettingsScreen: View {
     
     var body: some View {
         ScrollView(.vertical) {
-            VStack(alignment: .leading) {
-                Text("Instrument")
-                ScrollView(.horizontal,showsIndicators: false) {
-                    HStack(alignment: .center) {
-                        ForEach(Instrument.allCases) { instrument in
-                            InstrumentCard(
-                                instrument: instrument,
-                                isSelected: selectedInstrument == instrument
-                            )
-                            .onTapGesture {
-                                didSelectInstrument(instrument: instrument)
+            VStack(alignment: .center, spacing: 24) {
+                HStack {
+                    Text("Settings")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                    IconButton(
+                        iconImage: Image(systemName: "xmark"),
+                        style: .secondary
+                    ) {
+                        handleDismiss?()
+                    }
+                }
+                .padding(.top)
+                
+                SettingsSection(title: "Select Instrument") {
+                    ScrollView(.horizontal,showsIndicators: false) {
+                        HStack(alignment: .center) {
+                            ForEach(Instrument.allCases) { instrument in
+                                InstrumentCard(
+                                    instrument: instrument,
+                                    isSelected: selectedInstrument == instrument
+                                )
+                                .onTapGesture {
+                                    didSelectInstrument(instrument: instrument)
+                                }
                             }
                         }
                     }
-                    .padding(.vertical)
                 }
                 .scrollClipDisabled(true)
+                    
                 VStack(alignment: .leading, spacing: 12) {
                     if (selectedInstrument.tuningPresets.isNotEmpty) {
-                        Text("Tuning")
-                            .padding(.bottom, 8)
-                    }
-                    ForEach(selectedInstrument.tuningPresets) { tuningPreset in
-                        let isSelected = tuningPreset == tuningManager.tuningPreset
-                        TuningPresetRow(
-                            tuningPreset: tuningPreset,
-                            isSelected: isSelected)
-                        .onTapGesture {
-                            didSelectTuningPreset(tuningPreset: tuningPreset)
+                        SettingsSection(title: "Tuning Presets") {
+                            ForEach(selectedInstrument.tuningPresets) { tuningPreset in
+                                let isSelected = tuningPreset == tuningManager.tuningPreset
+                                TuningPresetRow(
+                                    tuningPreset: tuningPreset,
+                                    isSelected: isSelected)
+                                .onTapGesture {
+                                    withAnimation(.linear(duration: 0.05)) {
+                                        didSelectTuningPreset(tuningPreset: tuningPreset)
+                                    }
+                                }
+                            }
                         }
-                        
-                        Divider()
-                            .frame(height: OUTLINE_WIDTH)
-                            .overlay(isSelected ? .blue : .gray)
+                    } else if case .chromatic = selectedInstrument {
+                        VStack(spacing: 16) {
+                            Image(systemName: "tuningfork")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 80, height: 80)
+                                .foregroundStyle(.chromeJack)
+                            Text("FULL CHROMATIC RANGE")
+                                .font(.headline.weight(.heavy).italic())
+                                .foregroundStyle(.accent)
+                            Text("Tuning is automatic. The application will detect the nearest semitone and guide you to the target frequency.")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.textMeta)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(width: 256)
+                        .padding(.top, 48)
                     }
                 }
                 Spacer()
@@ -71,14 +100,7 @@ struct SettingsScreen: View {
         // @max Nice!
         .scrollClipDisabled(true)
         .padding()
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close settings", systemImage: "xmark") {
-                    handleDismiss?()
-                }
-            }
-        }
-        
+        .background(.canvas)
     }
     
     private func didSelectInstrument(instrument: Instrument) {
@@ -107,39 +129,23 @@ fileprivate struct InstrumentCard: View {
             VStack {
                 Text(instrument.rawValue)
                     .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(isSelected ? .text : .text)
             }
             .frame(width: 140, height: 80)
             .overlay {
-                if (isSelected) {
-                    RoundedRectangle(cornerRadius: 12)
-                        .inset(by: OUTLINE_WIDTH/2.0)
-                        .stroke(style: .init(lineWidth: OUTLINE_WIDTH))
-                    
-                }
+                RoundedRectangle(cornerRadius: 12)
+                    .inset(by: OUTLINE_WIDTH/2.0)
+                    .stroke(isSelected ? .accent : .border)
             }
             .background {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
                         isSelected
-                        ? Color.white.opacity(0.5)
-                        : Color.white.opacity(0.1)
+                        ? .accent
+                        : .card
                     )
             }
-            
-            if isSelected {
-                VStack(alignment: .center) {
-                    Image(systemName: "checkmark")
-                        .resizable()
-                        .renderingMode(.template)
-                        .scaledToFit()
-                        .frame(width: 16, height: 12)
-                        .foregroundStyle(.black.opacity(0.5))
-                        .padding(.all, 8)
-                        .background {
-                            UnevenRoundedRectangle(topLeadingRadius: 12, bottomTrailingRadius: 12)
-                        }
-                }
-            }
+            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }
@@ -155,29 +161,53 @@ fileprivate struct TuningPresetRow: View {
         HStack {
             VStack(alignment: .leading) {
                 Text(tuningPreset.rawValue)
-                    .font(.system(size: 16))
+                    .font(.system(size: 16).weight(.heavy))
+                    .foregroundStyle(isSelected ? .accent : .text)
                 HStack {
                     ForEach(TuningPreset.standard.pitches) { pitch in
                         Text(noteName(tuningNote: pitch))
-                            .font(.system(size: 12))
+                            .font(
+                                .system(size: 12)
+                                .weight(.heavy)
+                            )
                             .padding(.all, 4)
                             .background {
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.gray)
+                                    .fill(.canvas)
+                                    .stroke(.border)
                             }
                     }
                 }
             }
+            
             Spacer()
-            if isSelected {
-                Image(systemName: "checkmark.circle")
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-                    .foregroundColor(isSelected ? .blue : .gray)
+            
+            ZStack {
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.accent)
+                }
+            }
+            .frame(width: 24, height: 24)
+            .overlay {
+                Circle()
+                    .stroke(.border)
             }
         }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12.0)
+                .fill(isSelected ? .cardSelected : .card)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 12.0)
+                .stroke(isSelected ? .accent : . border)
+        }
+        .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 12))
     }
     
     private func noteName(tuningNote: Pitch) -> String {
@@ -187,4 +217,33 @@ fileprivate struct TuningPresetRow: View {
 
 #Preview {
     SettingsScreen(tuningManager: TuningManager())
+}
+
+
+// MARK: - SettingsSectionHeader
+
+fileprivate struct SettingsSectionHeader: View {
+    
+    let title: String
+    
+    var body: some View {
+        Text(title.uppercased())
+            .font(.subheadline.weight(.heavy).italic())
+            .foregroundStyle(.chromeJack)
+    }
+}
+
+// MARK: - SettingsSection
+
+fileprivate struct SettingsSection<Content>: View where Content: View {
+    
+    let title: String
+    let content: () -> Content
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SettingsSectionHeader(title: title)
+            content()
+        }
+    }
 }
