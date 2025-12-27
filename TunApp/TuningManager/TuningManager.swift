@@ -10,9 +10,15 @@ import AudioKitEX
 import Foundation
 import SoundpipeAudioKit
 import SwiftUI
+import Combine
 
 @Observable
 class TuningManager: HasAudioEngine {
+    
+    // MARK: Constants
+    
+    private let sustainInterval = 0.05 // seconds
+    private let maxSustainDuration = 1.0 // seconds
     
     // MARK: HasAudioEngine
     
@@ -41,10 +47,11 @@ class TuningManager: HasAudioEngine {
     
     private let signalProcessor = SignalProcessor()
     private let noteDetector = NoteDetector()
-    
     private let mic: AudioEngine.InputNode
     private let outputFader: Fader
     private var tracker: PitchTap?
+
+    private var sustainPreviousTuningDataTimer: AnyCancellable?
     
     init() {
         guard let mic = engine.input else {
@@ -97,9 +104,12 @@ class TuningManager: HasAudioEngine {
                 return
             }
             guard let processedFrequency = self.signalProcessor.process(pitch, amplitude: amp) else {
-                self.tuningData = nil
+                if (tuningData != nil) {
+                    startSustainTimer() // sustain timer will eventually set value to nil
+                }
                 return
             }
+            stopSustainTimer()
             var noteDetection: NoteDetector.NoteDetection?
             if let tuningPreset {
                 if isAutoDetectionEnabled {
@@ -118,12 +128,12 @@ class TuningManager: HasAudioEngine {
                     measuredFrequency: processedFrequency)
             }
             self.tuningData = noteDetection?.tuningData(amplitude: amp)
+            startSustainTimer()
         }
     }
     
     func enableChromaticTuning() {
         self.instrument = .chromatic
-        self.isAutoDetectionEnabled = false
         self.selectedPitch = nil
         self.tuningPreset = nil
     }
@@ -136,7 +146,6 @@ class TuningManager: HasAudioEngine {
             return
         }
         self.instrument = instrument
-        self.isAutoDetectionEnabled = false
         updatePreset(defaultPreset)
     }
     
@@ -153,6 +162,31 @@ class TuningManager: HasAudioEngine {
     func toggleAutoDetection(_ isEnabled: Bool) {
         isAutoDetectionEnabled = isEnabled
         selectedPitch = nil
+    }
+    
+    // MARK: - Private
+    
+    private func startSustainTimer() {
+        guard sustainPreviousTuningDataTimer == nil else { return }
+        sustainPreviousTuningDataTimer = Timer.publish(every: 0.05, on: .main, in: .common)
+            .autoconnect()
+            .prefix(Int(maxSustainDuration/sustainInterval))
+            .sink(receiveCompletion: { [weak self] _ in
+                // Logic to execute when the max repeats are reached
+                self?.stopSustainTimer()
+                print("Sustain limit reached - timer killed")
+            }, receiveValue: { [weak self] _ in
+                guard let self = self else { return }
+                // Force the update notification
+                self.tuningData = self.tuningData?.copy()
+                print("Sustain tick")
+            })
+    }
+    
+    private func stopSustainTimer() {
+        sustainPreviousTuningDataTimer?.cancel()
+        sustainPreviousTuningDataTimer = nil
+        self.tuningData = nil
     }
 }
 

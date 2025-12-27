@@ -87,14 +87,13 @@ struct GridLinesLayer: View {
 
 // MARK: - TickerLayer
 
-private let NEEDLE_DIAMETER: CGFloat = 40
-private let NEEDLE_POINTER_HEIGHT: CGFloat = 10
-private let NEEDLE_TOP_OFFSET: CGFloat = 32
-private let TICK_WIDTH: CGFloat = 3.0
+fileprivate let NEEDLE_DIAMETER: CGFloat = 40
+fileprivate let NEEDLE_POINTER_HEIGHT: CGFloat = 8
+fileprivate let NEEDLE_TOP_OFFSET: CGFloat = 40
+fileprivate let TICK_HEIGHT: CGFloat = 3.0
+fileprivate let TICK_WIDTH: CGFloat = 3.0
 
 private struct TickerLayer: View {
-    
-    private let TICK_HEIGHT: CGFloat = 1.0
     
     @State var valueBuffer = ValueBuffer()
     @Environment(TuningManager.self) var tuningManager
@@ -105,8 +104,9 @@ private struct TickerLayer: View {
                 Canvas { context, size in
                     valueBuffer.values.forEach { (timeStamp, pitch) in
                         var path = Path()
-                        let xOffset = size.width / 2.0
-                        let x = xOffset + CGFloat.boundedValue(pitch, availableWidth: size.width)
+                        let midX = size.width / 2.0
+                        let boundedX = CGFloat.boundedValue(pitch, availableWidth: size.width)
+                        let x = midX + boundedX
                         let elapsed = timeline.date.timeIntervalSince(timeStamp)
                         let yOffset = NEEDLE_DIAMETER + NEEDLE_POINTER_HEIGHT + NEEDLE_TOP_OFFSET
                         let y = yOffset + GRID_SPEED * elapsed
@@ -115,7 +115,7 @@ private struct TickerLayer: View {
                             size: CGSize(
                                 width: TICK_WIDTH, height: TICK_HEIGHT)
                         ))
-                        context.fill(path, with: .color(.failure))
+                        context.fill(path, with: .color(getTickColor(boundedX: boundedX)))
                     }
                 }
             }
@@ -124,6 +124,16 @@ private struct TickerLayer: View {
             guard let tuningData else { return }
             valueBuffer.add(CGFloat(tuningData.distance))
         }
+    }
+    
+    private func getTickColor(boundedX: CGFloat) -> Color {
+        var color = Color.failure
+        if (abs(boundedX) < 24) {
+            color = .success
+        } else if (abs(boundedX) < 56) {
+            color = .yellow
+        }
+        return color
     }
 }
 
@@ -151,7 +161,7 @@ private struct NeedleLayer: View {
     
     var strokeColor: Color {
         guard let tuningData else {
-            return .accent
+            return .chromeJack
         }
         
         return tuningData.distance < 0.02 ? .success : .failure
@@ -163,6 +173,8 @@ private struct NeedleLayer: View {
         }
         return "\(Int(tuningData.distance))"
     }
+    
+    @State private var xOffset: CGFloat = .zero
     
     var body: some View {
         GeometryReader { geometry in
@@ -176,7 +188,6 @@ private struct NeedleLayer: View {
                 .stroke(Color.gray, lineWidth: 1.2)
                 
                 // Needle
-                let xValue = getXValue(availableWidth: geometry.size.width)
                 VStack(alignment: .center, spacing: 0) {
  
                     Text(needleText)
@@ -187,19 +198,22 @@ private struct NeedleLayer: View {
                                 .stroke(strokeColor, lineWidth: 4)
                         }
                         .background(Circle().fill(.background))
-                        .offset(x: xValue)
-                        .animation(.spring, value: xValue)
+                        .offset(x: xOffset)
                         .contentTransition(.identity)
                     
                     Triangle()
                         .fill(strokeColor)
                         .stroke(strokeColor, style: StrokeStyle(lineWidth: 0.1, lineJoin: .round))
                         .frame(width: 8, height: NEEDLE_POINTER_HEIGHT)
-                        .offset(x: xValue)
-                        .animation(.spring, value: xValue)
+                        .offset(x: xOffset)
                     Spacer()
                 }
                 .padding(.top, NEEDLE_TOP_OFFSET)
+            }.onChange(of: tuningData) { oldValue, newValue in
+                let shouldAnimate = oldValue == nil
+                withAnimation(shouldAnimate ? nil : .easeIn(duration: 0.1)) {
+                    xOffset = getXValue(availableWidth: geometry.size.width)
+                }
             }
         }
     }
