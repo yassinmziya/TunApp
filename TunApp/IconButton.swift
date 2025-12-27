@@ -9,6 +9,8 @@ import SwiftUI
 
 struct IconButton: View {
     
+    private let radius: CGFloat = 56
+    
     enum Style {
         case primary, secondary
     }
@@ -18,26 +20,17 @@ struct IconButton: View {
     let action: () -> Void
     
     var body: some View {
-        
-        Group {
-            switch style {
-            case .primary:
-                Button(action: action) {
-                    iconImage
-                }
-                .buttonStyle(.glassProminent)
-            case .secondary:
-                Button(action: action) {
-                    iconImage
-                }
-                .buttonStyle(.glass)
-            }
-        }
-        .controlSize(.extraLarge)
-        .glassEffect(.regular.interactive(), in: .circle)
-        .background {
-            Circle()
-                .fill(Color.accentColor)
+        switch style {
+        case .primary:
+            iconImage
+                .frame(width: radius, height: radius)
+                .glassEffect(.clear.tint(.accent).interactive())
+                .onTapGesture(perform: action)
+        case .secondary:
+            iconImage
+                .frame(width: radius, height: radius)
+                .glassEffect(.regular.interactive(), in: .circle)
+                .onTapGesture(perform: action)
         }
     }
 }

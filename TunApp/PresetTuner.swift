@@ -76,28 +76,25 @@ fileprivate struct HeadstockButton: View {
     let isActive: Bool
     let action: () -> Void
     
-    private let RADIUS: CGFloat = 56
+    private let radius: CGFloat = 56
     
     var body: some View {
-        Button(action: action) {
-            Group {
-                Text(pitch.pitchClass.name())
-                    .font(.system(size: 24))
-                + Text("\(pitch.octave)")
-                    .font(.system(size: 16))
-            }
-            .frame(width: RADIUS, height: RADIUS)
+        Group {
+            Text(pitch.pitchClass.name())
+                .font(.system(size: 24))
+            + Text("\(pitch.octave)")
+                .font(.system(size: 16))
         }
-        .tint(.text)
-        .glassEffect(.regular.interactive())
+        .frame(width: radius, height: radius)
         .overlay {
             Circle()
-                .stroke(.white.opacity(0.4), lineWidth: 1)
+                .stroke(
+                    .border,
+                    lineWidth: 1
+                )
         }
-        .background {
-            Circle()
-                .fill(isActive ? Color.accentColor : .clear)
-        }
+        .glassEffect(.regular.tint(isActive ? .accent : .clear).interactive())
+        .onTapGesture(perform: action)
     }
 }
 
