@@ -9,7 +9,7 @@ import SwiftUI
 
 struct IconButton: View {
     
-    private let radius: CGFloat = 56
+    private let radius: CGFloat = 48
     
     enum Style {
         case primary, secondary

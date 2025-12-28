@@ -13,6 +13,10 @@ struct Pitch: Identifiable, Equatable {
     let octave: Int
     
     var id: String {
+        return name
+    }
+    
+    var name: String {
         return "\(pitchClass.name())\(octave)"
     }
     
