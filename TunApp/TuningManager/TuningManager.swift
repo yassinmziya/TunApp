@@ -30,7 +30,7 @@ class TuningManager: HasAudioEngine {
     
     // MARK: Settings
     
-    private(set) var tuningPreset: TuningPreset? = .standard {
+    private(set) var tuningPreset: TuningPreset? = .guitarStandard {
         didSet {
             #if DEBUG
             if tuningPreset == nil {

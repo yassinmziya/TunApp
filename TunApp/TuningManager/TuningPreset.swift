@@ -5,19 +5,30 @@
 //  Created by Yassin Mziya on 12/22/25.
 //
 
-enum TuningPreset: String, Identifiable {
+enum TuningPreset: Int, Identifiable {
     
     var id: String {
-        return rawValue
+        return "\(rawValue)"
     }
     
-    case standard = "Standard"
-    case dropD = "Drop D"
-    case openG = "Open G"
+    case guitarStandard = 0
+    case guitarDropD
+    case guitarOpenG
+    
+    var displayName: String {
+        switch self {
+        case .guitarStandard:
+            return "Standard"
+        case .guitarDropD:
+            return "Drop D"
+        case .guitarOpenG:
+            return "Open G"
+        }
+    }
     
     var pitches: [Pitch] {
         switch self {
-        case .standard:
+        case .guitarStandard:
             return [
                 Pitch(pitchClass: .e, octave: 2),
                 Pitch(pitchClass: .a, octave: 2),
@@ -26,7 +37,7 @@ enum TuningPreset: String, Identifiable {
                 Pitch(pitchClass: .b, octave: 3),
                 Pitch(pitchClass: .e, octave: 4)
             ]
-        case .dropD:
+        case .guitarDropD:
             return [
                 Pitch(pitchClass: .d, octave: 2),
                 Pitch(pitchClass: .a, octave: 2),
@@ -35,7 +46,7 @@ enum TuningPreset: String, Identifiable {
                 Pitch(pitchClass: .b, octave: 3),
                 Pitch(pitchClass: .e, octave: 4)
             ]
-        case .openG:
+        case .guitarOpenG:
             return [
                 Pitch(pitchClass: .d, octave: 2),
                 Pitch(pitchClass: .g, octave: 2),

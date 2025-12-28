@@ -160,11 +160,11 @@ fileprivate struct TuningPresetRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(tuningPreset.rawValue)
+                Text(tuningPreset.displayName)
                     .font(.system(size: 16).weight(.heavy))
                     .foregroundStyle(isSelected ? .accent : .text)
                 HStack {
-                    ForEach(TuningPreset.standard.pitches) { pitch in
+                    ForEach(tuningPreset.pitches) { pitch in
                         Text(noteName(tuningNote: pitch))
                             .font(
                                 .system(size: 12)

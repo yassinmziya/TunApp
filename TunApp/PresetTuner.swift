@@ -104,6 +104,6 @@ fileprivate struct HeadstockButton: View {
 }
 
 #Preview {
-    PresetTuner(tuningPreset: .standard, isAutoDetectionEnabled: true)
+    PresetTuner(tuningPreset: .guitarStandard, isAutoDetectionEnabled: true)
         .environment(TuningManager())
 }

@@ -103,7 +103,7 @@ fileprivate struct SheetHeader: View {
     let didTapSettingsCta: (() -> Void)?
     
     var body: some View {
-        let subheading = tuningManager.tuningPreset?.rawValue ?? "All 12 Semi-tones"
+        let subheading = tuningManager.tuningPreset?.displayName ?? "All 12 Semi-tones"
         HStack {
             VStack(alignment: .leading) {
                 Text(tuningManager.instrument.rawValue)
@@ -142,7 +142,7 @@ fileprivate struct TunerSettingsButton: View {
                         .foregroundStyle(.accent)
                 }
                 if let tuningPreset = tuningManager.tuningPreset {
-                    Text(tuningPreset.rawValue)
+                    Text(tuningPreset.displayName)
                         .font(.system(size: 16))
                         .foregroundStyle(.accent)
                 }

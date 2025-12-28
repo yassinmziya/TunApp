@@ -20,7 +20,7 @@ enum Instrument: String, CaseIterable, Identifiable {
         case .chromatic:
             return []
         case .acousticGuitar, .electricGuitar:
-            return [.standard, .dropD, .openG]
+            return [.guitarStandard, .guitarDropD, .guitarOpenG]
         }
     }
 }
