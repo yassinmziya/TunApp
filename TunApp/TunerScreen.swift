@@ -51,31 +51,32 @@ private struct SheetContent: View {
     @Binding var presentationDetent: PresentationDetent
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                if (!showSettings) {
-                    SheetHeader(didTapSettingsCta: didTapSettingsCta)
-                    Spacer()
-                }
-                Group {
-                    if showSettings {
-                        SettingsScreen(tuningManager: tuningManager, handleDismiss: didTapCloseSettingsCta)
-                    } else {
-                        if let tuningPreset = tuningManager.tuningPreset {
-                            PresetTuner(tuningPreset: tuningPreset, isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled)
-                        } else {
-                            ChromaticTuner()
-                        }
-                    }
-                }
+        VStack {
+            if (!showSettings) {
+                SheetHeader(didTapSettingsCta: didTapSettingsCta)
                 Spacer()
             }
-            .onChange(of: presentationDetent, { _, newValue in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    showSettings = newValue == PresentationDetent.large
+            Group {
+                if showSettings {
+                    SettingsScreen(
+                        tuningManager: tuningManager,
+                        handleDismiss: didTapCloseSettingsCta
+                    )
+                } else {
+                    if let tuningPreset = tuningManager.tuningPreset {
+                        PresetTuner(tuningPreset: tuningPreset, isAutoDetectionEnabled: tuningManager.isAutoDetectionEnabled)
+                    } else {
+                        ChromaticTuner()
+                    }
                 }
-            })
+            }
+            Spacer()
         }
+        .onChange(of: presentationDetent, { _, newValue in
+            withAnimation(.easeInOut(duration: 0.1)) {
+                showSettings = newValue == PresentationDetent.large
+            }
+        })
     }
     
     private func didTapSettingsCta() {

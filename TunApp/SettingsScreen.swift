@@ -28,41 +28,47 @@ struct SettingsScreen: View {
     }
     
     var body: some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .center, spacing: 24) {
-                HStack {
-                    Text("Settings")
-                        .font(.largeTitle.bold())
-                    Spacer()
-                    IconButton(
-                        iconImage: Image(systemName: "xmark"),
-                        style: .secondary
-                    ) {
-                        handleDismiss?()
-                    }
+        VStack(alignment: .center, spacing: 24) {
+            
+            // HEADER
+            
+            HStack {
+                Text("Settings")
+                    .font(.largeTitle.bold())
+                Spacer()
+                IconButton(
+                    iconImage: Image(systemName: "xmark"),
+                    style: .secondary
+                ) {
+                    handleDismiss?()
                 }
-                .padding(.top)
+            }
+            .padding(.top)
+            
+            // INSTUMENT
                 
-                SettingsSection(title: "Select Instrument") {
-                    ScrollView(.horizontal,showsIndicators: false) {
-                        HStack(alignment: .center) {
-                            ForEach(Instrument.allCases) { instrument in
-                                InstrumentCard(
-                                    instrument: instrument,
-                                    isSelected: selectedInstrument == instrument
-                                )
-                                .onTapGesture {
-                                    didSelectInstrument(instrument: instrument)
-                                }
+            SettingsSection(title: "Select Instrument") {
+                ScrollView(.horizontal,showsIndicators: false) {
+                    HStack(alignment: .center) {
+                        ForEach(Instrument.allCases) { instrument in
+                            InstrumentCard(
+                                instrument: instrument,
+                                isSelected: selectedInstrument == instrument
+                            )
+                            .onTapGesture {
+                                didSelectInstrument(instrument: instrument)
                             }
                         }
                     }
                 }
-                .scrollClipDisabled(true)
+            }
+            // @max Nice!
+            .scrollClipDisabled()
                     
-                VStack(alignment: .leading, spacing: 12) {
-                    if (selectedInstrument.tuningPresets.isNotEmpty) {
-                        SettingsSection(title: "Tuning Presets") {
+            VStack(alignment: .leading, spacing: 12) {
+                if (selectedInstrument.tuningPresets.isNotEmpty) {
+                    SettingsSection(title: "Tuning Presets") {
+                        ScrollView(.vertical) {
                             ForEach(selectedInstrument.tuningPresets) { tuningPreset in
                                 let isSelected = tuningPreset == tuningManager.tuningPreset
                                 TuningPresetRow(
@@ -75,32 +81,31 @@ struct SettingsScreen: View {
                                 }
                             }
                         }
-                    } else if case .chromatic = selectedInstrument {
-                        VStack(spacing: 16) {
-                            Image(systemName: "tuningfork")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 80, height: 80)
-                                .foregroundStyle(.chromeJack)
-                            Text("FULL CHROMATIC RANGE")
-                                .font(.headline.weight(.heavy).italic())
-                                .foregroundStyle(.accent)
-                            Text("Tuning is automatic. The application will detect the nearest semitone and guide you to the target frequency.")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.textMeta)
-                                .multilineTextAlignment(.center)
-                        }
-                        .frame(width: 256)
-                        .padding(.top, 48)
+                        .ignoresSafeArea()
                     }
+                    .ignoresSafeArea()
+                } else if case .chromatic = selectedInstrument {
+                    VStack(spacing: 16) {
+                        Image(systemName: "tuningfork")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 80)
+                            .foregroundStyle(.chromeJack)
+                        Text("FULL CHROMATIC RANGE")
+                            .font(.headline.weight(.heavy).italic())
+                            .foregroundStyle(.accent)
+                        Text("Tuning is automatic. The application will detect the nearest semitone and guide you to the target frequency.")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.textMeta)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(width: 256)
+                    .padding(.top, 48)
+                    Spacer()
                 }
-                Spacer()
             }
         }
-        // @max Nice!
-        .scrollClipDisabled(true)
-        .padding()
-        .background(.canvas)
+        .padding([.top, .leading, .trailing])
     }
     
     private func didSelectInstrument(instrument: Instrument) {
