@@ -99,12 +99,7 @@ fileprivate struct HeadstockButton: View {
                 )
         }
         .glassEffect(.regular.tint(isActive ? .accent : .clear).interactive())
-//        .onTapGesture(perform: action)
-        .onTapGesture {
-            print("Selecting \(pitch.name). Tuning manager currently: \(tuningManager.selectedPitch?.name)")
-            action()
-            print("Selected \(pitch.name). Tuning manager currently: \(tuningManager.selectedPitch?.name)")
-        }
+        .onTapGesture(perform: action)
     }
 }
 
