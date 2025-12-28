@@ -155,13 +155,15 @@ class TuningManager: HasAudioEngine {
     }
     
     func updateSelectedPitch(_ selectedPitch: Pitch) {
-        self.selectedPitch = selectedPitch
         self.isAutoDetectionEnabled = false
+        self.selectedPitch = selectedPitch
     }
     
     func toggleAutoDetection(_ isEnabled: Bool) {
         isAutoDetectionEnabled = isEnabled
-        selectedPitch = nil
+        if isEnabled {
+            selectedPitch = nil
+        }
     }
     
     // MARK: - Private
@@ -196,11 +198,10 @@ fileprivate extension NoteDetector.NoteDetection {
     
     func tuningData(amplitude: Float) -> TuningData {
         return TuningData(
-            pitch: frequency,
+            pitch: pitch,
+            frequency: frequency,
             amplitude: amplitude,
-            ocatave: pitch.octave,
-            distance: deviation,
-            note: pitch.pitchClass
+            distance: deviation
         )
     }
 }

@@ -8,14 +8,15 @@
 import Foundation
 
 struct TuningData: Equatable {
-    let id = UUID()
-    let pitch: Float
+    
+    private let id = UUID()
+    
+    let pitch: Pitch
+    let frequency: Float
     let amplitude: Float
-    let ocatave: Int
     let distance: Float
-    let note: PitchClass
     
     func copy() -> TuningData {
-        return TuningData(pitch: pitch, amplitude: amplitude, ocatave: ocatave, distance: distance, note: note)
+        return TuningData(pitch: pitch, frequency: frequency, amplitude: amplitude, distance: distance)
     }
 }

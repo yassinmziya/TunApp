@@ -17,14 +17,14 @@ struct ChromaticTuner: View {
     }
     
     var noteName: String {
-        guard let note =  tuningData?.note else {
+        guard let pitchClass =  tuningData?.pitch.pitchClass else {
             return "-"
         }
-        return note.name(usingFlats: usingFlats)
+        return pitchClass.name(usingFlats: usingFlats)
     }
     
     var octave: String {
-        guard let octave = tuningData?.ocatave else {
+        guard let octave = tuningData?.pitch.octave else {
             return ""
         }
         return String(octave)
@@ -42,8 +42,8 @@ struct ChromaticTuner: View {
             }
             .foregroundStyle(.accent)
             
-            if let pitch = tuningData?.pitch {
-                Text("\(Int(pitch)) Hz")
+            if let frequency = tuningData?.frequency {
+                Text("\(Int(frequency)) Hz")
                     .font(.system(size: 24))
                     .foregroundStyle(.chromeJack)
             }

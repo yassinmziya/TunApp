@@ -14,9 +14,9 @@ struct PresetTuner: View {
     let tuningPreset: TuningPreset
     @State private var isAutoDetectionEnabled: Bool
     
-    private var pitchText: String {
-        if let pitch = tuningManager.tuningData?.pitch {
-            return "\(Int(pitch)) Hz"
+    private var frequencyText: String {
+        if let frequency = tuningManager.tuningData?.frequency {
+            return "\(Int(frequency)) Hz"
         }
         return "0"
     }
@@ -29,7 +29,6 @@ struct PresetTuner: View {
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
-            
             HStack {
                 ForEach(tuningPreset.pitches.indices, id: \.self) { index in
                     let pitch = tuningPreset.pitches[index]
@@ -46,7 +45,7 @@ struct PresetTuner: View {
             }
             .padding(.horizontal)
             
-            Text(pitchText)
+            Text(frequencyText)
                 .font(.system(size: 24))
                 .foregroundStyle(.chromeJack)
                 .opacity(tuningManager.tuningData == nil ? 0 : 1)
@@ -64,6 +63,9 @@ struct PresetTuner: View {
                 .onChange(of: isAutoDetectionEnabled) { _, newValue in
                     tuningManager.toggleAutoDetection(newValue)
                 }
+                .onChange(of: tuningManager.isAutoDetectionEnabled) { _, newValue in
+                    isAutoDetectionEnabled = tuningManager.isAutoDetectionEnabled
+                }
             }
         }
     }
@@ -72,6 +74,8 @@ struct PresetTuner: View {
 // MARK: - HeadstockButton
 
 fileprivate struct HeadstockButton: View {
+    
+    @Environment(TuningManager.self) var tuningManager
     
     let pitch: Pitch
     let isActive: Bool
@@ -95,7 +99,12 @@ fileprivate struct HeadstockButton: View {
                 )
         }
         .glassEffect(.regular.tint(isActive ? .accent : .clear).interactive())
-        .onTapGesture(perform: action)
+//        .onTapGesture(perform: action)
+        .onTapGesture {
+            print("Selecting \(pitch.name). Tuning manager currently: \(tuningManager.selectedPitch?.name)")
+            action()
+            print("Selected \(pitch.name). Tuning manager currently: \(tuningManager.selectedPitch?.name)")
+        }
     }
 }
 
