@@ -30,6 +30,11 @@ struct SettingsScreen: View {
     var body: some View {
         VStack(alignment: .center, spacing: 24) {
             
+            /**
+             NOTE: Padding is set on individual sections because fuck Apple. We are unable to `scrollClipDisabled` for vertical scroll as
+             this causes scroll copntent to overlap the sticky header. Very cool smh
+             */
+            
             // HEADER
             
             HStack {
@@ -43,13 +48,13 @@ struct SettingsScreen: View {
                     handleDismiss?()
                 }
             }
-            .padding(.top)
+            .padding([.top, .horizontal])
             
-            // INSTUMENT
+            // INSTRUMENT
                 
             SettingsSection(title: "Select Instrument") {
-                ScrollView(.horizontal,showsIndicators: false) {
-                    HStack(alignment: .center) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(alignment: .center) {
                         ForEach(Instrument.allCases) { instrument in
                             InstrumentCard(
                                 instrument: instrument,
@@ -60,6 +65,8 @@ struct SettingsScreen: View {
                             }
                         }
                     }
+                    .fixedSize()
+                    .padding(.horizontal)
                 }
             }
             // @max Nice!
@@ -69,21 +76,23 @@ struct SettingsScreen: View {
                 if (selectedInstrument.tuningPresets.isNotEmpty) {
                     SettingsSection(title: "Tuning Presets") {
                         ScrollView(.vertical) {
-                            ForEach(selectedInstrument.tuningPresets) { tuningPreset in
-                                let isSelected = tuningPreset == tuningManager.tuningPreset
-                                TuningPresetRow(
-                                    tuningPreset: tuningPreset,
-                                    isSelected: isSelected)
-                                .onTapGesture {
-                                    withAnimation(.linear(duration: 0.05)) {
-                                        didSelectTuningPreset(tuningPreset: tuningPreset)
+                            LazyVStack {
+                                ForEach(selectedInstrument.tuningPresets) { tuningPreset in
+                                    let isSelected = tuningPreset == tuningManager.tuningPreset
+                                    TuningPresetRow(
+                                        tuningPreset: tuningPreset,
+                                        isSelected: isSelected)
+                                    .onTapGesture {
+                                        withAnimation(.linear(duration: 0.05)) {
+                                            didSelectTuningPreset(tuningPreset: tuningPreset)
+                                        }
                                     }
                                 }
                             }
                         }
-                        .ignoresSafeArea()
+                        .contentMargins(.horizontal, 16, for: .scrollContent)
+                        .contentMargins(.vertical, 16, for: .scrollContent)
                     }
-                    .ignoresSafeArea()
                 } else if case .chromatic = selectedInstrument {
                     VStack(spacing: 16) {
                         Image(systemName: "tuningfork")
@@ -105,7 +114,6 @@ struct SettingsScreen: View {
                 }
             }
         }
-        .padding([.top, .leading, .trailing])
     }
     
     private func didSelectInstrument(instrument: Instrument) {
@@ -220,10 +228,6 @@ fileprivate struct TuningPresetRow: View {
     }
 }
 
-#Preview {
-    SettingsScreen(tuningManager: TuningManager())
-}
-
 
 // MARK: - SettingsSectionHeader
 
@@ -248,7 +252,13 @@ fileprivate struct SettingsSection<Content>: View where Content: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             SettingsSectionHeader(title: title)
+                .padding(.horizontal)
             content()
         }
     }
+}
+
+
+#Preview {
+    Text("Hi")
 }
