@@ -77,6 +77,7 @@ private struct SheetContent: View {
                 showSettings = newValue == PresentationDetent.large
             }
         })
+        .ignoresSafeArea(.all, edges: .bottom)
     }
     
     private func didTapSettingsCta() {

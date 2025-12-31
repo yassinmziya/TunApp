@@ -164,7 +164,7 @@ private struct NeedleLayer: View {
             return .chromeJack
         }
         
-        return tuningData.distance < 0.02 ? .success : .failure
+        return abs(tuningData.distance) < 0.02 ? .success : .failure
     }
     
     var needleText: String {
